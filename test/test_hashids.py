@@ -54,6 +54,3 @@ def test_negative_call():
 
 def test_float_call():
     assert Hashids().encrypt(1, 2.5, 3) == ''
-
-if __name__ == '__main__':
-    test_salt()
