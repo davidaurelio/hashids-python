@@ -35,5 +35,12 @@ def test_alphabet():
     assert h.encrypt(23832) == 'cZKL'
     assert h.encrypt(99, 25) == 'aNCEI'
 
+def test_min_length():
+    h = Hashids(min_length=25)
+    assert h.encrypt(7452, 2967, 21401) == '4ARhAecbrrGh8K7FBBbi4nkhL'
+    assert h.encrypt(1, 2, 3) == 'IeRX9XtbpTkatKSAcXe4tALde'
+    assert h.encrypt(6097) == 'aULxKgxFpEi7prdcK7LFLz4Lk'
+    assert h.encrypt(99, 25) == 'UrBa8pCqLTnq4CGTaMpC7Kj6x'
+
 if __name__ == '__main__':
     test_salt()

@@ -38,8 +38,9 @@ def _consistent_shuffle(iterable, salt):
 
 
 class Hashids(object):
-    def __init__(self, salt='', alphabet=alphabet):
+    def __init__(self, salt='', min_length=0, alphabet=alphabet):
         alphabet = OrderedDict(enumerate(alphabet))
+        self._min_length = max(int(min_length), 0)
         self._salt = salt
 
         self._guards = guards = []
@@ -53,27 +54,60 @@ class Hashids(object):
         self._alphabet = tuple(_consistent_shuffle(alphabet.values(), salt))
 
     def encrypt(self, *values):
-        if not len(values):
+        if not values:
             return ''
 
-        salt = self._salt
+        return self._encode(values, self._alphabet, self._salt,
+                            self._min_length)
 
+    def _encode(self, values, alphabet, salt, min_length=0):
+        num_length = len(values)
         str_values = [str(x) for x in values]
-        separators = list(_consistent_shuffle(self._separators, ''.join(str_values)))
+        separators = list(_consistent_shuffle(self._separators,
+                                              ''.join(str_values)))
         num_separators = len(separators)
 
-        lottery_salt = '-'.join(chain(str_values, (str((v + 1) * 2) for v in values)))
-        lottery = list(_consistent_shuffle(self._alphabet, lottery_salt))
+        lottery_salt = '-'.join(chain(str_values,
+                                      (str((v + 1) * 2) for v in values)))
+        lottery = list(_consistent_shuffle(alphabet, lottery_salt))
         hashed = lottery_char = lottery[0]
-        alphabet = list(_to_front(lottery_char, self._alphabet))
+        alphabet = list(_to_front(lottery_char, alphabet))
 
-        n = len(values)
         for i, value in enumerate(values):
             alphabet_salt = str(ord(lottery_char) & 12345) + salt
             alphabet = list(_consistent_shuffle(alphabet, alphabet_salt))
             hashed += _hash(value, alphabet)
 
-            if i < n - 1:
+            if i < num_length - 1:
                 hashed += separators[(value + i) % num_separators]
 
+        length = len(hashed)
+        if length < min_length:
+            first_index = sum((i + 1) * value
+                              for i, value in enumerate(values))
+
+            guards = self._guards
+            num_guards = len(guards)
+            guard_index = first_index % num_guards
+            hashed = guards[guard_index] + hashed
+            length += 1
+
+            if length < min_length:
+                hashed += guards[(guard_index + length) % num_guards]
+                length += 1
+
+        while length < min_length:
+            pad = ord(alphabet[1]), ord(alphabet[0])
+            pad_left = self._encode(pad, alphabet, salt)
+            pad_right = self._encode(pad, alphabet, '%d%d' % pad)
+            hashed = pad_left + hashed + pad_right
+
+            length = len(hashed)
+            excess = length - min_length
+            if excess > 0:
+                hashed = hashed[excess//2:-excess//2]
+
+            alphabet = list(_consistent_shuffle(alphabet, salt + hashed))
+
         return hashed
+
