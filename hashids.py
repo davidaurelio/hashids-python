@@ -38,18 +38,19 @@ def _consistent_shuffle(iterable, salt):
 
 
 class Hashids(object):
-    def __init__(self, salt=''):
-        abc = OrderedDict(enumerate(alphabet))
+    def __init__(self, salt='', alphabet=alphabet):
+        alphabet = OrderedDict(enumerate(alphabet))
         self._salt = salt
 
         self._guards = guards = []
-        self._separators = separators = [abc.pop(prime - 1) for prime in primes
-                                         if prime - 1 in abc]
+        self._separators = separators = [alphabet.pop(prime - 1)
+                                         for prime in primes
+                                         if prime - 1 in alphabet]
         for index in (0, 4, 8, 12):
             if index < len(separators):
                 guards.append(separators.pop(index))
 
-        self._alphabet = tuple(_consistent_shuffle(abc.values(), salt))
+        self._alphabet = tuple(_consistent_shuffle(alphabet.values(), salt))
 
     def encrypt(self, *values):
         if not len(values):

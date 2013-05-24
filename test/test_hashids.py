@@ -28,5 +28,12 @@ def test_salt():
     assert h.encrypt(2, 4, 6) == 'Xbh4fp'
     assert h.encrypt(99, 25) == 'K6nCz'
 
+def test_alphabet():
+    h = Hashids(alphabet='!"#%&\',-/0123456789:;<=>ABCDEFGHIJKLMNOPQRSTUVWXYZ_`abcdefghijklmnopqrstuvwxyz~')
+    assert h.encrypt(2839, 12, 32, 5) == '!%u#Y=%#v'
+    assert h.encrypt(1, 2, 3) == ':Y9c#2'
+    assert h.encrypt(23832) == 'cZKL'
+    assert h.encrypt(99, 25) == 'aNCEI'
+
 if __name__ == '__main__':
     test_salt()
