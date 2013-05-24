@@ -1,8 +1,11 @@
-from collections import OrderedDict
 from itertools import chain
 
 alphabet = 'xcS4F6h89aUbideAI7tkynuopqrXCgTE5GBKHLMjfRsz'
 primes = (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43)
+
+def _replace_index(list, index, object):
+    list.insert(index, object)
+    return list.pop(index + 1)
 
 def _to_front(element, iterator):
     return chain((element,), (x for x in iterator if x != element))
@@ -36,22 +39,22 @@ def _consistent_shuffle(iterable, salt):
         pos = sorting[i] % len(l)
         yield l.pop(pos)
 
-
 class Hashids(object):
     def __init__(self, salt='', min_length=0, alphabet=alphabet):
-        alphabet = OrderedDict(enumerate(alphabet))
+        alphabet = [x for i, x in enumerate(alphabet) if alphabet.index(x) == i]
         self._min_length = max(int(min_length), 0)
         self._salt = salt
 
         self._guards = guards = []
-        self._separators = separators = [alphabet.pop(prime - 1)
+        len_alphabet = len(alphabet)
+        self._separators = separators = [_replace_index(alphabet, prime - 1, None)
                                          for prime in primes
-                                         if prime - 1 in alphabet]
+                                         if prime - 1 < len_alphabet]
         for index in (0, 4, 8, 12):
             if index < len(separators):
                 guards.append(separators.pop(index))
 
-        self._alphabet = tuple(_consistent_shuffle(alphabet.values(), salt))
+        self._alphabet = tuple(_consistent_shuffle(filter(bool, alphabet), salt))
 
     def encrypt(self, *values):
         if not values:
