@@ -42,5 +42,18 @@ def test_min_length():
     assert h.encrypt(6097) == 'aULxKgxFpEi7prdcK7LFLz4Lk'
     assert h.encrypt(99, 25) == 'UrBa8pCqLTnq4CGTaMpC7Kj6x'
 
+def test_all_parameters():
+    h = Hashids('arbitrary salt', 16, 'abcdefghijklmnopqrstuvwxyz')
+    assert h.encrypt(7452, 2967, 21401) == 'mjpnilkonugzfjub'
+    assert h.encrypt(1, 2, 3) == 'nqyjbjpcfeymvfiq'
+    assert h.encrypt(60125) == 'vxwfjmrnfvtmpdow'
+    assert h.encrypt(99, 25) == 'hsnymlyueozbnijs'
+
+def test_negative_call():
+    assert Hashids().encrypt(1, -2, 3) == ''
+
+def test_float_call():
+    assert Hashids().encrypt(1, 2.5, 3) == ''
+
 if __name__ == '__main__':
     test_salt()

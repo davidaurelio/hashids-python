@@ -1,5 +1,10 @@
 from itertools import chain
 
+def _is_uint(n):
+    try:
+        return n == int(n) and n >= 0
+    except ValueError:
+        return False
 
 def _replace_index(list, index, object):
     list.insert(index, object)
@@ -58,7 +63,7 @@ class Hashids(object):
         self._alphabet = tuple(_consistent_shuffle(filter(bool, alphabet), salt))
 
     def encrypt(self, *values):
-        if not values:
+        if not (values and all(map(_is_uint, values))):
             return ''
 
         return self._encode(values, self._alphabet, self._salt,
