@@ -1,7 +1,5 @@
 from itertools import chain
 
-alphabet = 'xcS4F6h89aUbideAI7tkynuopqrXCgTE5GBKHLMjfRsz'
-primes = (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43)
 
 def _replace_index(list, index, object):
     list.insert(index, object)
@@ -40,7 +38,10 @@ def _consistent_shuffle(iterable, salt):
         yield l.pop(pos)
 
 class Hashids(object):
-    def __init__(self, salt='', min_length=0, alphabet=alphabet):
+    PRIMES = (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43)
+
+    def __init__(self, salt='', min_length=0,
+                 alphabet='xcS4F6h89aUbideAI7tkynuopqrXCgTE5GBKHLMjfRsz'):
         alphabet = [x for i, x in enumerate(alphabet) if alphabet.index(x) == i]
         self._min_length = max(int(min_length), 0)
         self._salt = salt
@@ -48,7 +49,7 @@ class Hashids(object):
         self._guards = guards = []
         len_alphabet = len(alphabet)
         self._separators = separators = [_replace_index(alphabet, prime - 1, None)
-                                         for prime in primes
+                                         for prime in self.PRIMES
                                          if prime - 1 < len_alphabet]
         for index in (0, 4, 8, 12):
             if index < len(separators):
