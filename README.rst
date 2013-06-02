@@ -16,6 +16,12 @@ Hashids was designed for use in URL shortening, tracking stuff, validating accou
 Usage
 =====
 
+Install the module from PyPI, e. g. with pip:
+
+.. code:: shell
+
+  pip install hashids
+
 Import the constructor from the ``hashids`` module:
 
 .. code:: python
