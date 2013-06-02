@@ -1,4 +1,10 @@
 from hashids import Hashids
+import pytest
+
+class TestConstructor(object):
+    def test_small_alphabet(self):
+        pytest.raises(ValueError, Hashids, alphabet='abcabc')
+
 
 class TestEncryption(object):
     def test_empty_call(self):

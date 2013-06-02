@@ -103,6 +103,10 @@ class Hashids(object):
         :param alphabet: The characters to use for the generated hash ids.
         """
         alphabet = [x for i, x in enumerate(alphabet) if alphabet.index(x) == i]
+        if len(alphabet) < 4:
+            raise ValueError('Alphabet must contain at least 4 '
+                             'unique characters.')
+
         self._min_length = max(int(min_length), 0)
         self._salt = salt
 
