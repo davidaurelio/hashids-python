@@ -2,6 +2,8 @@
 hashids for Python 2.5–3
 ========================
 
+Website: http://www.hashids.org/
+
 Generate short hashes from unsigned integers (like YouTube and Bitly).
 
 - obfuscate database IDs
