@@ -3,6 +3,8 @@ http://hashids.org/. Compatible with Python 2.5--3"""
 from itertools import chain
 import re
 
+__version__ = '0.8.0'
+
 # Python 2/3 compatibility code
 try:
     _STR_TYPE = basestring
