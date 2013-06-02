@@ -1,5 +1,5 @@
 """Implements the hashids algorithm in python. For more information, visit
-http://hashids.org/. Compatible with Python 2.5--3"""
+http://www.hashids.org/. Compatible with Python 2.5--3"""
 from itertools import chain
 import re
 
@@ -91,8 +91,7 @@ def _re_class(characters):
     return re.compile('[%s]' % re.escape(''.join(characters)))
 
 class Hashids(object):
-    """Hashes and restores values using the "hashids"
-    algorithm (http://hashids.org/)."""
+    """Hashes and restores values using the "hashids" algorithm."""
     PRIMES = (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43)
 
     def __init__(self, salt='', min_length=0,
