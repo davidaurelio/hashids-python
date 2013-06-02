@@ -5,7 +5,7 @@ from os import path
 from distutils.core import setup
 
 
-with open(path.join(path.dirname(__file__), 'README.rst')) as file:
+with open(path.join(path.dirname(__file__), 'README.txt')) as file:
     long_description = file.read()
 
 setup(name='hashids',
