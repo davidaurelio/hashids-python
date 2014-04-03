@@ -1,6 +1,8 @@
 """Implements the hashids algorithm in python. For more information, visit
 http://www.hashids.org/. Compatible with Python 2.5--3"""
-__version__ = '0.0.1'
+from math import ceil
+
+__version__ = '0.8.5'
 
 
 def _is_uint(number):
@@ -15,7 +17,7 @@ class Hashids(object):
     MIN_ALPHABET_LENGTH = 16
     _seps = 'cfhistuCFHISTU'
     _sep_div = 3.5
-    _guard_div = 12
+    _guard_div = 12.0
 
     def __init__(self, salt='', min_length=0,
                  alphabet='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'):
@@ -29,25 +31,27 @@ class Hashids(object):
         assert ' ' not in unique_alphabet, \
             'error: alphabet cannot contain spaces'
 
-        self._seps = [val for val in unique_alphabet if val in self._seps]
-        self._alphabet = [val for val in unique_alphabet if val not in self._seps]
+        self._seps = ''.join([val for val in self._seps if val in unique_alphabet])
+        self._alphabet = ''.join([val for val in unique_alphabet if val not in self._seps])
 
         self._seps = self._consistent_shuffle(self._seps, self._salt)
 
         if not len(self._seps) or len(self._alphabet) / len(self._seps) > self._sep_div:
-            len_seps = len(self._alphabet) // self._sep_div
+            len_seps = ceil(len(self._alphabet) / self._sep_div)
             if 1 == len_seps:
                 len_seps += 1
 
             if len_seps > len(self._seps):
                 diff = int(len_seps - len(self._seps))
+
                 self._seps += self._alphabet[:diff]
                 self._alphabet = self._alphabet[diff:]
             else:
                 self._seps = self._seps[:len_seps]
 
         self._alphabet = self._consistent_shuffle(self._alphabet, self._salt)
-        guard_count = len(self._alphabet) // self._guard_div
+
+        guard_count = int(ceil(len(self._alphabet) / self._guard_div))
 
         if len(self._alphabet) < 3:
             self._guards = self._seps[:guard_count]
