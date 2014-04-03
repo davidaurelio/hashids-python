@@ -1,28 +1,9 @@
 """Implements the hashids algorithm in python. For more information, visit
 http://www.hashids.org/. Compatible with Python 2.5--3"""
-from itertools import chain
-import re
+from math import ceil
 
-__version__ = '0.8.3'
+__version__ = '0.8.5'
 
-# Python 2/3 compatibility code
-try:
-    _STR_TYPE = basestring
-except NameError:
-    _STR_TYPE = str
-
-def _head(iterable):
-    """Extracts the first value from an iterable."""
-    # Python < 2.6 does not have `next()`
-    # Python 3 does not have generator.next()
-    for value in iterable:
-        return value
-
-# end of compatibility code
-
-def _is_str(candidate):
-    """Returns whether a value is a string."""
-    return isinstance(candidate, _STR_TYPE)
 
 def _is_uint(number):
     """Returns whether a value is an unsigned integer."""
@@ -31,202 +12,185 @@ def _is_uint(number):
     except ValueError:
         return False
 
-def _replace_index(list_object, index, value):
-    """Replaces a value in a list_object with another value. Returns the
-    replaced value."""
-    list_object.insert(index, value)
-    return list_object.pop(index + 1)
-
-def _to_front(value, iterator):
-    """Yields `value`, then all other elements from `iterator` if they are not
-    equal to `value`."""
-    return chain((value,), (x for x in iterator if x != value))
-
-def _hash(number, alphabet):
-    """Hashes `number` using the given `alphabet` sequence."""
-    hashed = ''
-    len_alphabet = len(alphabet)
-    while True:
-        hashed = alphabet[number % len_alphabet] + hashed
-        number //= len_alphabet
-        if not number:
-            return hashed
-
-def _unhash(hashed, alphabet):
-    """Restores a number tuple from hashed using the given `alphabet` index."""
-    number = 0
-    len_hash = len(hashed)
-    len_alphabet = len(alphabet)
-    for i, character in enumerate(hashed):
-        position = alphabet.index(character)
-        number += position * len_alphabet ** (len_hash - i - 1)
-
-    return number
-
-def _reorder(iterable, salt):
-    """Yields all values from `iterable` in an order derived from the
-    given `salt`."""
-    sorting = [ord(x) for x in salt] if salt else [0]
-    len_sorting = len(sorting)
-    values = list(iterable)
-
-    for i in range(len_sorting):
-        add = True
-        for k in range(i, len_sorting + i - 1):
-            diff = sorting[(k + 1) % len_sorting]
-            sorting[i] += diff + (k * i) if add else -diff
-            add = not add
-
-        sorting[i] = abs(sorting[i])
-
-    i = -1
-    while values:
-        i = (i + 1) % len_sorting
-        pos = sorting[i] % len(values)
-        yield values.pop(pos)
-
-def _re_class(characters):
-    """Creates a regular expression with a character class matching
-    all `characters`."""
-    return re.compile('[%s]' % re.escape(''.join(characters)))
 
 class Hashids(object):
-    """Hashes and restores values using the "hashids" algorithm."""
-    PRIMES = (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43)
+    MIN_ALPHABET_LENGTH = 16
+    _seps = 'cfhistuCFHISTU'
+    _sep_div = 3.5
+    _guard_div = 12.0
 
     def __init__(self, salt='', min_length=0,
-                 alphabet='xcS4F6h89aUbideAI7tkynuopqrXCgTE5GBKHLMjfRsz'):
-        """
-        Initializes a Hashids object with salt, minimum length, and alphabet.
-
-        :param salt: A string influencing the generated hash ids.
-        :param min_length: The minimum length for generated hashes
-        :param alphabet: The characters to use for the generated hash ids.
-        """
-        alphabet = [x for i, x in enumerate(alphabet) if alphabet.index(x) == i]
-        if len(alphabet) < 4:
-            raise ValueError('Alphabet must contain at least 4 '
-                             'unique characters.')
-
-        self._min_length = max(int(min_length), 0)
+                 alphabet='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'):
         self._salt = salt
+        self._min_length = max(int(min_length), 0)
 
-        len_alphabet = len(alphabet)
-        separators = [_replace_index(alphabet, prime - 1, None)
-                      for prime in self.PRIMES if prime - 1 < len_alphabet]
+        unique_alphabet = [x for i, x in enumerate(alphabet) if alphabet.index(x) == i]
+        assert len(unique_alphabet) >= Hashids.MIN_ALPHABET_LENGTH, \
+            'error: alphabet must contain at least %d unique characters' % (Hashids.MIN_ALPHABET_LENGTH,)
 
-        self._guards = guards = tuple(separators.pop(index)
-                                      for index in (0, 4, 8, 12)
-                                      if index < len(separators))
-        self._guards_re = _re_class(guards)
-        self._separators = tuple(separators)
-        self._separators_re = _re_class(separators)
-        alphabet = (x for x in alphabet if x)
-        self._alphabet = tuple(_reorder(alphabet, salt))
+        assert ' ' not in unique_alphabet, \
+            'error: alphabet cannot contain spaces'
 
-    def encrypt(self, *values):
-        """Builds a hash from the passed `values`.
+        self._seps = ''.join([val for val in self._seps if val in unique_alphabet])
+        self._alphabet = ''.join([val for val in unique_alphabet if val not in self._seps])
 
-        :param values The values to transform into a hashid
+        self._seps = self._consistent_shuffle(self._seps, self._salt)
 
-        >>> hashids = Hashids('arbitrary salt', 16, 'abcdefghijkl')
-        >>> hashids.encrypt(1, 23, 456)
-        'fhblhkfjejddjbdl'
-        """
-        if not (values and all(_is_uint(x) for x in values)):
+        if not len(self._seps) or len(self._alphabet) / len(self._seps) > self._sep_div:
+            len_seps = ceil(len(self._alphabet) / self._sep_div)
+            if 1 == len_seps:
+                len_seps += 1
+
+            if len_seps > len(self._seps):
+                diff = int(len_seps - len(self._seps))
+
+                self._seps += self._alphabet[:diff]
+                self._alphabet = self._alphabet[diff:]
+            else:
+                self._seps = self._seps[:len_seps]
+
+        self._alphabet = self._consistent_shuffle(self._alphabet, self._salt)
+
+        guard_count = int(ceil(len(self._alphabet) / self._guard_div))
+
+        if len(self._alphabet) < 3:
+            self._guards = self._seps[:guard_count]
+            self._seps = self._seps[guard_count:]
+        else:
+            self._guards = self._alphabet[:guard_count]
+            self._alphabet = self._alphabet[guard_count:]
+
+        self._alphabet = ''.join(self._alphabet)
+
+    def encrypt(self, *numbers):
+        if not len(numbers):
             return ''
 
-        hashed, alphabet = self._encode(values, self._alphabet, self._salt)
-        return self._ensure_length(hashed, values, alphabet)
+        if not (numbers and all(_is_uint(x) for x in numbers)):
+            return ''
 
-    def _encode(self, values, alphabet, salt):
-        """Helper method that does the hash building without argument checks."""
-        len_values = len(values)
-        str_values = [str(x) for x in values]
-        separators = list(_reorder(self._separators, ''.join(str_values)))
-        len_separators = len(separators)
+        return self.encode(numbers)
 
-        lottery_salt = '-'.join(chain(str_values,
-                                      (str((v + 1) * 2) for v in values)))
-        hashed = lottery_char = _head(_reorder(alphabet, lottery_salt))
-        alphabet = list(_to_front(lottery_char, alphabet))
-
-        for i, value in enumerate(values):
-            alphabet_salt = '%d%s' % (ord(lottery_char) & 12345, salt)
-            alphabet = list(_reorder(alphabet, alphabet_salt))
-            hashed += _hash(value, alphabet)
-
-            if i < len_values - 1:
-                hashed += separators[(value + i) % len_separators]
-
-        return hashed, alphabet
-
-    def _ensure_length(self, hashid, values, alphabet):
-        """Helper method that extends a hashid if it does not have the
-        minimum lenght."""
-        length = self._min_length
-        salt = self._salt
-        len_hashed = len(hashid)
-        if len_hashed < length:
-            first_index = sum((i + 1) * value for i, value in enumerate(values))
-
-            guards = self._guards
-            len_guards = len(guards)
-            guard_index = first_index % len_guards
-            hashid = guards[guard_index] + hashid
-            len_hashed += 1
-
-            if len_hashed < length:
-                hashid += guards[(guard_index + len_hashed) % len_guards]
-                len_hashed += 1
-
-        while len_hashed < length:
-            pad = ord(alphabet[1]), ord(alphabet[0])
-            pad_left = self._encode(pad, alphabet, salt)[0]
-            pad_right = self._encode(pad, alphabet, '%d%d' % pad)[0]
-            hashid = pad_left + hashid + pad_right
-
-            len_hashed = len(hashid)
-            excess = len_hashed - length
-            if excess > 0:
-                hashid = hashid[excess//2:-excess//2]
-
-            alphabet = list(_reorder(alphabet, salt + hashid))
-
-        return hashid
-
-    def decrypt(self, hashid):
-        """Restore a tuple of numbers from the passed `hashid`.
-
-        :param hashid The hashid to decrypt
-
-        >>> hashids = Hashids('arbitrary salt', 16, 'abcdefghijkl')
-        >>> hashids.decrypt('fhblhkfjejddjbdl')
-        (1, 23, 456)
-        """
-        if not hashid or not _is_str(hashid):
+    def decrypt(self, hashed):
+        if not hashed:
             return ()
+
         try:
-            return tuple(self._decode(hashid))
+            numbers = tuple(self._decode(hashed))
+            return numbers if hashed == self.encode(numbers) else ()
         except:
             return ()
 
-    def _decode(self, hashid):
-        """Helper method that restores the values encoded in a hashid without
-        argument checks."""
-        parts = self._guards_re.split(hashid)
-        hashid = parts[1] if 2 <= len(parts) <= 3 else parts[0]
+    def encode(self, numbers):
+        alphabet = self._alphabet
 
-        lottery_char = None
-        hash_parts = self._separators_re.split(hashid)
-        for part in ((i, x) for i, x in enumerate(hash_parts) if x):
-            i, sub_hash = part
-            if i == 0:
-                lottery_char = hashid[0]
-                sub_hash = sub_hash[1:]
-                alphabet = _to_front(lottery_char, self._alphabet)
+        numbers_hash_int = 0
+        for i, x in enumerate(numbers):
+            numbers_hash_int += x % (i + 100)
 
-            if lottery_char and alphabet:
-                salt = '%d%s' % (ord(lottery_char) & 12345, self._salt)
-                alphabet = list(_reorder(alphabet, salt))
-                yield _unhash(sub_hash, alphabet)
+        numbers_size = len(numbers)
+
+        lottery = alphabet[numbers_hash_int % len(alphabet)]
+        ret = lottery
+
+        for i, number in enumerate(numbers):
+            buffer = lottery + self._salt + alphabet
+            alphabet = self._consistent_shuffle(alphabet, buffer[:len(alphabet)])
+            last = self._hash(number, alphabet)
+
+            ret += last
+
+            if i + 1 < numbers_size:
+                number %= (ord(last[0]) + i)
+                seps_index = number % len(self._seps)
+                ret += self._seps[seps_index]
+
+        if len(ret) < self._min_length:
+            guard_index = (numbers_hash_int + ord(ret[0])) % len(self._guards)
+            guard = self._guards[guard_index]
+
+            ret = guard + ret
+
+            if len(ret) < self._min_length:
+                guard_index = (numbers_hash_int + ord(ret[2])) % len(self._guards)
+                guard = self._guards[guard_index]
+
+                ret += guard
+
+        half_len = len(alphabet) // 2
+        while len(ret) < self._min_length:
+            alphabet = self._consistent_shuffle(alphabet, alphabet)
+            ret = alphabet[half_len:] + ret + alphabet[:half_len]
+
+            excess = len(ret) - self._min_length
+            if excess > 0:
+                ret = ret[excess // 2:-excess // 2]
+
+        return ret
+
+    def _decode(self, hash):
+        alphabet = self._alphabet
+
+        import re
+
+        guard_re = re.compile('[%s]' % re.escape(''.join(self._guards)))
+        seps_re = re.compile('[%s]' % re.escape(''.join(self._seps)))
+
+        parts = guard_re.split(hash)
+        hash = parts[1] if 2 <= len(parts) <= 3 else parts[0]
+
+        lottery = hash[0]
+        hash = hash[1:]
+
+        parts = seps_re.split(hash)
+        for part in parts:
+            buffer = lottery + self._salt + alphabet
+
+            alphabet = self._consistent_shuffle(alphabet, buffer[:len(alphabet)])
+            yield self._unhash(part, alphabet)
+
+
+    @staticmethod
+    def _unhash(hashed, alphabet):
+        number = 0
+        len_hash = len(hashed)
+        len_alphabet = len(alphabet)
+        for i, character in enumerate(hashed):
+            position = alphabet.index(character)
+            number += position * len_alphabet ** (len_hash - i - 1)
+
+        return number
+
+    @staticmethod
+    def _hash(number, alphabet):
+        hashed = ''
+        alphabet_len = len(alphabet)
+
+        while True:
+            hashed = alphabet[number % alphabet_len] + hashed
+            number //= alphabet_len
+            if not number:
+                return hashed
+
+    @staticmethod
+    def _consistent_shuffle(alphabet, salt):
+        if not len(salt):
+            return alphabet
+
+        len_salt = len(salt)
+
+        integer, j, temp, i, v, p = 0, 0, 0, 0, 0, 0
+
+        i = len(alphabet) - 1
+        for v in range(i):
+            v %= len_salt
+            integer = ord(salt[v])
+            p += integer
+            j = (integer + v + p) % i
+            temp = alphabet[j]
+            alphabet = alphabet[:j] + alphabet[i] + alphabet[j + 1:]
+            alphabet = alphabet[:i] + temp + alphabet[i + 1:]
+
+            i -= 1
+
+        return alphabet
