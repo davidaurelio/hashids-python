@@ -11,50 +11,51 @@ class TestEncryption(object):
         assert Hashids().encrypt() == ''
 
     def test_default_salt(self):
-        assert Hashids().encrypt(1, 2, 3) == 'katKSA'
+        assert Hashids().encrypt(1, 2, 3) == 'o2fXhV'
 
     def test_single_number(self):
         h = Hashids()
-        assert h.encrypt(12345) == 'rGAx'
-        assert h.encrypt(1) == 'yE'
-        assert h.encrypt(22) == 'B8'
-        assert h.encrypt(333) == '7G9'
-        assert h.encrypt(9999) == 'zpz5'
+        assert h.encrypt(12345) == 'j0gW'
+        assert h.encrypt(1) == 'jR'
+        assert h.encrypt(22) == 'Lw'
+        assert h.encrypt(333) == 'Z0E'
+        assert h.encrypt(9999) == 'w0rR'
 
     def test_multiple_numbers(self):
         h = Hashids()
-        assert h.encrypt(683, 94108, 123, 5) == '6nph8p9duq8u9'
-        assert h.encrypt(1, 2, 3) == 'katKSA'
-        assert h.encrypt(2, 4, 6) == '5jhof9'
-        assert h.encrypt(99, 25) == 'nq4CG'
+        assert h.encrypt(683, 94108, 123, 5) == 'vJvi7On9cXGtD'
+        assert h.encrypt(1, 2, 3) == 'o2fXhV'
+        assert h.encrypt(2, 4, 6) == 'xGhmsW'
+        assert h.encrypt(99, 25) == '3lKfD'
 
     def test_salt(self):
         h = Hashids(salt='Arbitrary string')
-        assert h.encrypt(683, 94108, 123, 5) == 'q9khp7X9u6BuE'
-        assert h.encrypt(1, 2, 3) == 'a7tLSG'
-        assert h.encrypt(2, 4, 6) == 'Xbh4fp'
-        assert h.encrypt(99, 25) == 'K6nCz'
+        assert h.encrypt(683, 94108, 123, 5) == 'QWyf8yboH7KT2'
+        assert h.encrypt(1, 2, 3) == 'neHrCa'
+        assert h.encrypt(2, 4, 6) == 'LRCgf2'
+        assert h.encrypt(99, 25) == 'JOMh1'
 
     def test_alphabet(self):
         h = Hashids(alphabet='!"#%&\',-/0123456789:;<=>ABCDEFGHIJKLMNOPQRSTUVWXYZ_`abcdefghijklmnopqrstuvwxyz~')
-        assert h.encrypt(2839, 12, 32, 5) == '!%u#Y=%#v'
-        assert h.encrypt(1, 2, 3) == ':Y9c#2'
-        assert h.encrypt(23832) == 'cZKL'
-        assert h.encrypt(99, 25) == 'aNCEI'
+        assert h.encrypt(2839, 12, 32, 5) == '_nJUNTVU3'
+        assert h.encrypt(1, 2, 3) == '7xfYh2'
+        assert h.encrypt(23832) == 'Z6R>'
+        assert h.encrypt(99, 25) == 'AYyIB'
 
     def test_min_length(self):
         h = Hashids(min_length=25)
-        assert h.encrypt(7452, 2967, 21401) == '4ARhAecbrrGh8K7FBBbi4nkhL'
-        assert h.encrypt(1, 2, 3) == 'IeRX9XtbpTkatKSAcXe4tALde'
-        assert h.encrypt(6097) == 'aULxKgxFpEi7prdcK7LFLz4Lk'
-        assert h.encrypt(99, 25) == 'UrBa8pCqLTnq4CGTaMpC7Kj6x'
+        assert h.encrypt(7452, 2967, 21401) == 'pO3K69b86jzc6krI416enr2B5'
+        assert h.encrypt(1, 2, 3) == 'gyOwl4B97bo2fXhVaDR0Znjrq'
+        assert h.encrypt(6097) == 'Nz7x3VXyMYerRmWeOBQn6LlRG'
+        assert h.encrypt(99, 25) == 'k91nqP3RBe3lKfDaLJrvy8XjV'
 
     def test_all_parameters(self):
         h = Hashids('arbitrary salt', 16, 'abcdefghijklmnopqrstuvwxyz')
-        assert h.encrypt(7452, 2967, 21401) == 'mjpnilkonugzfjub'
-        assert h.encrypt(1, 2, 3) == 'nqyjbjpcfeymvfiq'
-        assert h.encrypt(60125) == 'vxwfjmrnfvtmpdow'
-        assert h.encrypt(99, 25) == 'hsnymlyueozbnijs'
+        assert h.encrypt(7452, 2967, 21401) == 'wygqxeunkatjgkrw'
+        assert h.encrypt(1, 2, 3) == 'pnovxlaxuriowydb'
+        assert h.encrypt(60125) == 'jkbgxljrjxmlaonp'
+        assert h.encrypt(99, 25) == 'erdjpwrgouoxlvbx'
+
 
     def test_negative_call(self):
         assert Hashids().encrypt(1, -2, 3) == ''
