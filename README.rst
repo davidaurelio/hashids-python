@@ -2,25 +2,47 @@
 hashids for Python 2.5–3
 ========================
 
-Website: http://www.hashids.org/
+A python port of the JavaScript *hashids* implementation. It generates YouTube-like hashes from one or many numbers. Use hashids when you do not want to expose your database ids to the user. Website: http://www.hashids.org/
 
-Generate short hashes from unsigned integers (like YouTube and Bitly).
+Compatibility
+=============
 
-- obfuscate database IDs
-- use them as forgotten password hashes
-- invitation codes
-- store shard numbers
+hashids is tested with python 2.5, 2.6, 2.7 and 3.4.
 
-Hashids was designed for use in URL shortening, tracking stuff, validating accounts or making pages private. Instead of showing items as ``1``, ``2``, or ``3``, you could show them as ``b9iLXiAa``, ``EATedTBy``, and ``Aaco9cy5``. Hashes depend on your salt value.
+Compatibility with the JavaScript implementation
+------------------------------------------------
 
-Usage
-=====
+==================   ==============
+hashids/JavaScript   hashids/Python
+------------------   --------------
+v0.1.x               v0.8.x
+v0.3.x               v1.0.0
+==================   ==============
+
+The JavaScript implementation produces different hashes in versions 0.1.x and 0.3.x. For compatibility with the older 0.1.x version install hashids 0.8.4 from pip, otherwise the newest hashids.
+
+
+Installation
+============
 
 Install the module from PyPI, e. g. with pip:
 
-.. code:: shell
+.. code:: bash
 
   pip install hashids
+  pip install hashids==0.8.4 # for compatibility with hashids.js 0.1.x
+
+Run the tests
+=============
+
+The tests are written with `pytest <http://pytest.org/latest/>`_. The pytest module has to be installed.
+
+.. code:: bash
+
+  python -m pytest
+
+Usage
+=====
 
 Import the constructor from the ``hashids`` module:
 
@@ -36,42 +58,42 @@ Encrypt a single integer:
 
 .. code:: python
 
-  hashid = hashids.encrypt(123) # 'AjL'
+  hashid = hashids.encrypt(123) # 'Mj3'
 
 Decrypt a hash:
 
 .. code:: python
 
-  ints = hashids.decrypt('b9a') # (456,)
+  ints = hashids.decrypt('xoz') # (456,)
 
 To encrypt several integers, pass them all at once:
 
 .. code:: python
 
-  hashid = hashids.encrypt(123, 456, 789) # 'qa9t96h7G'
+  hashid = hashids.encrypt(123, 456, 789) # 'El3fkRIo3'
 
 Decryption is done the same way:
 
 .. code:: python
 
-  ints = hashids.decrypt('yn8t46hen') # (517, 729, 185)
+  ints = hashids.decrypt('1B8UvJfXm') # (517, 729, 185)
 
 Using A Custom Salt
 -------------------
 
-Hashids supports personalizing your hashes by accepting a salt value. If you don’t want others to decrypt your hashes, provide a unique string to the constructor.
+Hashids supports salting hashes by accepting a salt value. If you don’t want others to decrypt your hashes, provide a unique string to the constructor.
 
 .. code:: python
 
   hashids = Hashids(salt='this is my salt 1')
-  hashid = hashids.encrypt(123) # 'rnR'
+  hashid = hashids.encrypt(123) # 'nVB'
 
 The generated hash changes whenever the salt is changed:
 
 .. code:: python
 
   hashids = Hashids(salt='this is my salt 2')
-  hashid = hashids.encrypt(123) # 'XBn'
+  hashid = hashids.encrypt(123) # 'ojK'
 
 A salt string between 6 and 32 characters provides decent randomization.
 
@@ -85,35 +107,57 @@ This is done by passing the minimum hash length to the constructor. Hashes are p
 .. code:: python
 
   hashids = Hashids(min_length=16)
-  hashid = Hashids.encrypt(1) # 'Ee7uE4iyEiEG7ued'
+  hashid = Hashids.encrypt(1) # '4q2VolejRejNmGQB'
 
 Using A Custom Alphabet
 -----------------------
 
-It’s possible to set a custom alphabet for your hashes. The default alphabet is ``'xcS4F6h89aUbideAI7tkynuopqrXCgTE5GBKHLMjfRsz'``.
+It’s possible to set a custom alphabet for your hashes. The default alphabet is ``'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'``.
 
 To have only lowercase letters in your hashes, pass in the following custom alphabet:
 
 .. code:: python
 
   hashids = Hashids(alphabet='abcdefghijklmnopqrstuvwxyz')
-  hashid = hashids.encrypt(123456789) # 'dpovunuo'
+  hashid = hashids.encrypt(123456789) # 'kekmyzyk'
 
-A custom alphabet must contain at least 4 letters, but should contain at least 16 characters.
+A custom alphabet must contain at least 16 characters.
 
-#%@&
-----
+Randomness
+==========
 
-This code was written with the intent of placing generated hashes in visible places – like the URL.
+The primary purpose of hashids is to obfuscate ids. It's not meant or tested to be used for security purposes or compression. Having said that, this algorithm does try to make these hashes unguessable and unpredictable:
+
+Repeating numbers
+-----------------
+
+There are no repeating patterns that might show that there are 4 identical numbers in the hash:
+
+.. code:: python
+
+  hashids = Hashids("this is my salt")
+  hashids.encrypt(5, 5, 5, 5) # '1Wc8cwcE'
+
+The same is valid for incremented numbers:
+
+.. code:: python
+
+  hashids.encrypt(1, 2, 3, 4, 5, 6, 7, 8, 9, 10) # 'kRHnurhptKcjIDTWC3sx'
+
+  hashids.encrypt(1) # 'NV'
+  hashids.encrypt(2) # '6m'
+  hashids.encrypt(3) # 'yD'
+  hashids.encrypt(4) # '2l'
+  hashids.encrypt(5) # 'rD'
+
+Curses! #$%@
+============
+
+This code was written with the intent of placing generated hashes in visible places – like the URL.  Which makes it unfortunate if generated hashes accidentally formed a bad word.
 
 Therefore, the algorithm tries to avoid generating most common English curse words by never placing the following letters next to each other: **c, C, s, S, f, F, h, H, u, U, i, I, t, T.**
 
-Collisions
-----------
+Licenes
+=======
 
-There are no collisions. Your generated hashes should be unique.
-
-Decryptable Hash ¿qué?
-----------------------
-
-A true cryptographic hash cannot be decrypted. However, to keep things simple the word hash is used loosely to refer to the random set of characters that are generated. Like a YouTube hash.
+MIT license, see the LICENSE file. You can use hashids in open source projects and commercial products.
