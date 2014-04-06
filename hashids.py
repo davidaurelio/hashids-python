@@ -1,7 +1,6 @@
 """Implements the hashids algorithm in python. For more information, visit
 http://www.hashids.org/. Compatible with Python 2.5--3"""
 from __future__ import division
-from itertools import chain
 from math import ceil
 
 __version__ = '1.0.0'
@@ -15,13 +14,6 @@ try:
 except NameError:
     StrType = str
 
-def _head(iterable):
-    """Extracts the first value from an iterable."""
-    # Python < 2.6 does not have `next()`
-    # Python 3 does not have generator.next()
-    for value in iterable:
-        return value
-
 # end of compatibility code
 def _is_str(candidate):
     """Returns whether a value is a string."""
@@ -33,17 +25,6 @@ def _is_uint(number):
         return number == int(number) and number >= 0
     except ValueError:
         return False
-
-def _replace_index(list_object, index, value):
-    """Replaces a value in a list_object with another value. Returns the
-    replaced value."""
-    list_object.insert(index, value)
-    return list_object.pop(index + 1)
-
-def _to_front(value, iterator):
-    """Yields `value`, then all other elements from `iterator` if they are not
-    equal to `value`."""
-    return chain((value,), (x for x in iterator if x != value))
 
 def _split(string, splitters):
     """Splits a string into parts at multiple characters"""
@@ -165,7 +146,6 @@ def _decrypt(hashid, salt, alphabet, separators, guards):
 
 class Hashids(object):
     """Hashes and restores values using the "hashids" algorithm."""
-    PRIMES = (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43)
     ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 
     def __init__(self, salt='', min_length=0, alphabet=ALPHABET):
