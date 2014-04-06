@@ -86,10 +86,30 @@ def _index_from_ratio(dividend, divisor):
     """Returns the ceiled ratio of two numbers as int."""
     return int(ceil(dividend / divisor))
 
+def _ensure_length(encoded, min_length, alphabet, guards, values_hash):
+    """Ensures the minimal hash length"""
+    len_guards = len(guards)
+    guard_index = (values_hash + ord(encoded[0])) % len_guards
+    encoded = guards[guard_index] + encoded
+
+    if len(encoded) < min_length:
+        guard_index = (values_hash + ord(encoded[2])) % len_guards
+        encoded += guards[guard_index]
+
+    split_at = len(alphabet) // 2
+    while len(encoded) < min_length:
+        alphabet = _reorder(alphabet, alphabet)
+        encoded = alphabet[split_at:] + encoded + alphabet[:split_at]
+        excess = len(encoded) - min_length
+        if excess > 0:
+            from_index = excess // 2
+            encoded = encoded[from_index:from_index+min_length]
+
+    return encoded
+
 def _encrypt(values, salt, min_length, alphabet, separators, guards):
     """Helper function that does the hash building without argument checks."""
 
-    len_values = len(values)
     len_alphabet = len(alphabet)
     len_separators = len(separators)
     values_hash = sum(x % (i + 100) for i, x in enumerate(values))
@@ -101,30 +121,13 @@ def _encrypt(values, salt, min_length, alphabet, separators, guards):
         alphabet = _reorder(alphabet, alphabet_salt)
         last = _hash(value, alphabet)
         encoded += last
+        value %= ord(last[0]) + i
+        encoded += separators[value % len_separators]
 
-        if i < len_values - 1:
-            value %= ord(last[0]) + i
-            encoded += separators[value % len_separators]
+    encoded = encoded[:-1] # cut off last separator
 
-    len_guards = len(guards)
-    if len(encoded) < min_length:
-        guard_index = (values_hash + ord(encoded[0])) % len_guards
-        encoded = guards[guard_index] + encoded
-
-        if len(encoded) < min_length:
-            guard_index = (values_hash + ord(encoded[2])) % len_guards
-            encoded += guards[guard_index]
-
-    split_at = len_alphabet // 2
-    while len(encoded) < min_length:
-        alphabet = _reorder(alphabet, alphabet)
-        encoded = alphabet[split_at:] + encoded + alphabet[:split_at]
-        excess = len(encoded) - min_length
-        if excess > 0:
-            from_index = excess // 2
-            encoded = encoded[from_index:from_index+min_length]
-
-    return encoded
+    return (encoded if len(encoded) >= min_length else
+            _ensure_length(encoded, min_length, alphabet, guards, values_hash))
 
 def _decrypt(hashid, salt, alphabet, separators, guards):
     """Helper method that restores the values encoded in a hashid without
