@@ -4,16 +4,16 @@ from __future__ import division
 from itertools import chain
 from math import ceil
 
-__version__ = '0.8.3'
+__version__ = '1.0.0'
 
-RATIO_ALPHABET_SEPARATORS = 3.5
-RATIO_ALPHABET_GUARDS = 12
+RATIO_SEPARATORS = 3.5
+RATIO_GUARDS = 12
 
 # Python 2/3 compatibility code
 try:
-    _STR_TYPE = basestring
+    StrType = basestring
 except NameError:
-    _STR_TYPE = str
+    StrType = str
 
 def _head(iterable):
     """Extracts the first value from an iterable."""
@@ -23,10 +23,9 @@ def _head(iterable):
         return value
 
 # end of compatibility code
-
 def _is_str(candidate):
     """Returns whether a value is a string."""
-    return isinstance(candidate, _STR_TYPE)
+    return isinstance(candidate, StrType)
 
 def _is_uint(number):
     """Returns whether a value is an unsigned integer."""
@@ -47,13 +46,14 @@ def _to_front(value, iterator):
     return chain((value,), (x for x in iterator if x != value))
 
 def _split(string, splitters):
+    """Splits a string into parts at multiple characters"""
     part = ''
     for character in string:
         if character in splitters:
             yield part
             part = ''
         else:
-         part += character
+            part += character
     yield part
 
 def _hash(number, alphabet):
@@ -84,12 +84,12 @@ def _reorder(string, salt):
     if len_salt == 0:
         return string
 
-    i, v, p = len(string) - 1, 0, 0
+    i, index, integer_sum = len(string) - 1, 0, 0
     while i > 0:
-        v %= len_salt
-        integer = ord(salt[v])
-        p += integer
-        j = (integer + v + p) % i
+        index %= len_salt
+        integer = ord(salt[index])
+        integer_sum += integer
+        j = (integer + index + integer_sum) % i
 
         temp = string[j]
         trailer = string[j+1:] if j + 1 < len(string) else ''
@@ -97,11 +97,12 @@ def _reorder(string, salt):
         string = string[0:i] + temp + string[i+1:]
 
         i -= 1
-        v += 1
+        index += 1
 
     return string
 
 def _index_from_ratio(dividend, divisor):
+    """Returns the ceiled ratio of two numbers as int."""
     return int(ceil(dividend / divisor))
 
 def _encode(values, salt, min_length, alphabet, separators, guards):
@@ -147,9 +148,9 @@ def _encode(values, salt, min_length, alphabet, separators, guards):
 class Hashids(object):
     """Hashes and restores values using the "hashids" algorithm."""
     PRIMES = (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43)
+    ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 
-    def __init__(self, salt='', min_length=0,
-                 alphabet='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'):
+    def __init__(self, salt='', min_length=0, alphabet=ALPHABET):
         """
         Initializes a Hashids object with salt, minimum length, and alphabet.
 
@@ -171,7 +172,7 @@ class Hashids(object):
 
         separators = _reorder(separators, salt)
 
-        min_separators = _index_from_ratio(len_alphabet, RATIO_ALPHABET_SEPARATORS)
+        min_separators = _index_from_ratio(len_alphabet, RATIO_SEPARATORS)
         if not separators or len_separators < min_separators:
             if min_separators == 1:
                 min_separators = 2
@@ -182,7 +183,7 @@ class Hashids(object):
                 len_alphabet = len(alphabet)
 
         alphabet = _reorder(alphabet, salt)
-        num_guards = _index_from_ratio(len_alphabet, RATIO_ALPHABET_GUARDS)
+        num_guards = _index_from_ratio(len_alphabet, RATIO_GUARDS)
         if len_alphabet < 3:
             guards = separators[:num_guards]
             separators = separators[num_guards:]
