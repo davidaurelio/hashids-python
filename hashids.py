@@ -1,6 +1,6 @@
 """Implements the hashids algorithm in python. For more information, visit
 http://www.hashids.org/. Compatible with Python 2.5--3"""
-from __future__ import division
+
 from math import ceil
 
 __version__ = '1.0.0'
@@ -84,7 +84,7 @@ def _reorder(string, salt):
 
 def _index_from_ratio(dividend, divisor):
     """Returns the ceiled ratio of two numbers as int."""
-    return int(ceil(dividend / divisor))
+    return int(ceil(float(dividend) / divisor))
 
 def _ensure_length(encoded, min_length, alphabet, guards, values_hash):
     """Ensures the minimal hash length"""
