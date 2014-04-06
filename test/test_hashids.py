@@ -56,6 +56,19 @@ class TestEncryption(object):
         assert h.encrypt(60125) == 'jkbgxljrjxmlaonp'
         assert h.encrypt(99, 25) == 'erdjpwrgouoxlvbx'
 
+    def test_alphabet_without_standard_separators(self):
+        h = Hashids(alphabet='abdegjklmnopqrvwxyzABDEGJKLMNOPQRVWXYZ1234567890')
+        assert h.encrypt(7452, 2967, 21401) == 'X50Yg6VPoAO4'
+        assert h.encrypt(1, 2, 3) == 'GAbDdR'
+        assert h.encrypt(60125) == '5NMPD'
+        assert h.encrypt(99, 25) == 'yGya5'
+
+    def test_alphabet_with_two_standard_separators(self):
+        h = Hashids(alphabet='abdegjklmnopqrvwxyzABDEGJKLMNOPQRVWXYZ1234567890uC')
+        assert h.encrypt(7452, 2967, 21401) == 'GJNNmKYzbPBw'
+        assert h.encrypt(1, 2, 3) == 'DQCXa4'
+        assert h.encrypt(60125) == '38V1D'
+        assert h.encrypt(99, 25) == '373az'
 
     def test_negative_call(self):
         assert Hashids().encrypt(1, -2, 3) == ''
@@ -121,3 +134,17 @@ class TestDecryption(object):
 
     def test_invalid_hash(self):
         assert Hashids(alphabet='abcdefghijklmnop').decrypt('qrstuvwxyz') == ()
+
+    def test_alphabet_without_standard_separators(self):
+        h = Hashids(alphabet='abdegjklmnopqrvwxyzABDEGJKLMNOPQRVWXYZ1234567890')
+        assert h.decrypt('X50Yg6VPoAO4') == (7452, 2967, 21401)
+        assert h.decrypt('GAbDdR') == (1, 2, 3)
+        assert h.decrypt('5NMPD') == (60125,)
+        assert h.decrypt('yGya5') == (99, 25)
+
+    def test_alphabet_with_two_standard_separators(self):
+        h = Hashids(alphabet='abdegjklmnopqrvwxyzABDEGJKLMNOPQRVWXYZ1234567890uC')
+        assert h.decrypt('GJNNmKYzbPBw') == (7452, 2967, 21401)
+        assert h.decrypt('DQCXa4') == (1, 2, 3)
+        assert h.decrypt('38V1D') == (60125,)
+        assert h.decrypt('373az') == (99, 25)
