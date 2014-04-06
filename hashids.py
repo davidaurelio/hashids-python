@@ -1,5 +1,5 @@
 """Implements the hashids algorithm in python. For more information, visit
-http://www.hashids.org/. Compatible with Python 2.5--3"""
+http://www.hashids.org/. Compatible with Python 2.5, 2.6, 2.7 and 3.4+"""
 
 from math import ceil
 
@@ -201,9 +201,9 @@ class Hashids(object):
 
         :param values The values to transform into a hashid
 
-        >>> hashids = Hashids('arbitrary salt', 16, 'abcdefghijkl')
+        >>> hashids = Hashids('arbitrary salt', 16, 'abcdefghijkl0123456')
         >>> hashids.encrypt(1, 23, 456)
-        'fhblhkfjejddjbdl'
+        '1d6216i30h53elk3'
         """
         if not (values and all(_is_uint(x) for x in values)):
             return ''
@@ -216,8 +216,8 @@ class Hashids(object):
 
         :param hashid The hashid to decrypt
 
-        >>> hashids = Hashids('arbitrary salt', 16, 'abcdefghijkl')
-        >>> hashids.decrypt('fhblhkfjejddjbdl')
+        >>> hashids = Hashids('arbitrary salt', 16, 'abcdefghijkl0123456')
+        >>> hashids.decrypt('1d6216i30h53elk3')
         (1, 23, 456)
         """
         if not hashid or not _is_str(hashid):
