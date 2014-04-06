@@ -71,53 +71,53 @@ class TestDecryption(object):
         assert Hashids().decrypt(object()) == ()
 
     def test_default_salt(self):
-        assert Hashids().decrypt('katKSA') == (1, 2, 3)
+        assert Hashids().decrypt('o2fXhV') == (1, 2, 3)
 
     def test_empty_call(self):
         assert Hashids().decrypt('') == ()
 
     def test_single_number(self):
         h = Hashids()
-        assert h.decrypt('rGAx') == (12345,)
-        assert h.decrypt('yE') == (1,)
-        assert h.decrypt('B8') == (22,)
-        assert h.decrypt('7G9') == (333,)
-        assert h.decrypt('zpz5') == (9999,)
+        assert h.decrypt('j0gW') == (12345,)
+        assert h.decrypt('jR') == (1,)
+        assert h.decrypt('Lw') == (22,)
+        assert h.decrypt('Z0E') == (333,)
+        assert h.decrypt('w0rR') == (9999,)
 
     def test_multiple_numbers(self):
         h = Hashids()
-        assert h.decrypt('6nph8p9duq8u9') == (683, 94108, 123, 5,)
-        assert h.decrypt('katKSA') == (1, 2, 3,)
-        assert h.decrypt('5jhof9') == (2, 4, 6,)
-        assert h.decrypt('nq4CG') == (99, 25,)
+        assert h.decrypt('vJvi7On9cXGtD') == (683, 94108, 123, 5,)
+        assert h.decrypt('o2fXhV') == (1, 2, 3,)
+        assert h.decrypt('xGhmsW') == (2, 4, 6,)
+        assert h.decrypt('3lKfD') == (99, 25,)
 
     def test_salt(self):
         h = Hashids(salt='Arbitrary string')
-        assert h.decrypt('q9khp7X9u6BuE') == (683, 94108, 123, 5,)
-        assert h.decrypt('a7tLSG') == (1, 2, 3,)
-        assert h.decrypt('Xbh4fp') == (2, 4, 6,)
-        assert h.decrypt('K6nCz') == (99, 25,)
+        assert h.decrypt('QWyf8yboH7KT2') == (683, 94108, 123, 5,)
+        assert h.decrypt('neHrCa') == (1, 2, 3,)
+        assert h.decrypt('LRCgf2') == (2, 4, 6,)
+        assert h.decrypt('JOMh1') == (99, 25,)
 
     def test_alphabet(self):
         h = Hashids(alphabet='!"#%&\',-/0123456789:;<=>ABCDEFGHIJKLMNOPQRSTUVWXYZ_`abcdefghijklmnopqrstuvwxyz~')
-        assert h.decrypt('!%u#Y=%#v') == (2839, 12, 32, 5,)
-        assert h.decrypt(':Y9c#2') == (1, 2, 3,)
-        assert h.decrypt('cZKL') == (23832,)
-        assert h.decrypt('aNCEI') == (99, 25,)
+        assert h.decrypt('_nJUNTVU3') == (2839, 12, 32, 5,)
+        assert h.decrypt('7xfYh2') == (1, 2, 3,)
+        assert h.decrypt('Z6R>') == (23832,)
+        assert h.decrypt('AYyIB') == (99, 25,)
 
     def test_min_length(self):
         h = Hashids(min_length=25)
-        assert h.decrypt('4ARhAecbrrGh8K7FBBbi4nkhL') == (7452, 2967, 21401,)
-        assert h.decrypt('IeRX9XtbpTkatKSAcXe4tALde') == (1, 2, 3,)
-        assert h.decrypt('aULxKgxFpEi7prdcK7LFLz4Lk') == (6097,)
-        assert h.decrypt('UrBa8pCqLTnq4CGTaMpC7Kj6x') == (99, 25,)
+        assert h.decrypt('pO3K69b86jzc6krI416enr2B5') == (7452, 2967, 21401,)
+        assert h.decrypt('gyOwl4B97bo2fXhVaDR0Znjrq') == (1, 2, 3,)
+        assert h.decrypt('Nz7x3VXyMYerRmWeOBQn6LlRG') == (6097,)
+        assert h.decrypt('k91nqP3RBe3lKfDaLJrvy8XjV') == (99, 25,)
 
     def test_all_parameters(self):
         h = Hashids('arbitrary salt', 16, 'abcdefghijklmnopqrstuvwxyz')
-        assert h.decrypt('mjpnilkonugzfjub') == (7452, 2967, 21401,)
-        assert h.decrypt('nqyjbjpcfeymvfiq') == (1, 2, 3,)
-        assert h.decrypt('vxwfjmrnfvtmpdow') == (60125,)
-        assert h.decrypt('hsnymlyueozbnijs') == (99, 25,)
+        assert h.decrypt('wygqxeunkatjgkrw') == (7452, 2967, 21401,)
+        assert h.decrypt('pnovxlaxuriowydb') == (1, 2, 3,)
+        assert h.decrypt('jkbgxljrjxmlaonp') == (60125,)
+        assert h.decrypt('erdjpwrgouoxlvbx') == (99, 25,)
 
     def test_invalid_hash(self):
-        assert Hashids(alphabet='abcdefghijklm').decrypt('nopqrstuvw') == ()
+        assert Hashids(alphabet='abcdefghijklmnop').decrypt('qrstuvwxyz') == ()
