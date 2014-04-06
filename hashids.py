@@ -105,7 +105,7 @@ def _index_from_ratio(dividend, divisor):
     """Returns the ceiled ratio of two numbers as int."""
     return int(ceil(dividend / divisor))
 
-def _encode(values, salt, min_length, alphabet, separators, guards):
+def _encrypt(values, salt, min_length, alphabet, separators, guards):
     """Helper function that does the hash building without argument checks."""
 
     len_values = len(values)
@@ -145,7 +145,7 @@ def _encode(values, salt, min_length, alphabet, separators, guards):
 
     return encoded
 
-def _decode(hashid, salt, alphabet, separators, guards):
+def _decrypt(hashid, salt, alphabet, separators, guards):
     """Helper method that restores the values encoded in a hashid without
     argument checks."""
     parts = tuple(_split(hashid, guards))
@@ -225,8 +225,8 @@ class Hashids(object):
         if not (values and all(_is_uint(x) for x in values)):
             return ''
 
-        return _encode(values, self._salt, self._min_length, self._alphabet,
-                       self._separators, self._guards)
+        return _encrypt(values, self._salt, self._min_length, self._alphabet,
+                        self._separators, self._guards)
 
     def decrypt(self, hashid):
         """Restore a tuple of numbers from the passed `hashid`.
@@ -240,7 +240,7 @@ class Hashids(object):
         if not hashid or not _is_str(hashid):
             return ()
         try:
-            return tuple(_decode(hashid, self._salt, self._alphabet,
-                                 self._separators, self._guards))
+            return tuple(_decrypt(hashid, self._salt, self._alphabet,
+                                  self._separators, self._guards))
         except ValueError:
             return ()
