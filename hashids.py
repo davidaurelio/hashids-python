@@ -145,6 +145,24 @@ def _encode(values, salt, min_length, alphabet, separators, guards):
 
     return encoded
 
+def _decode(hashid, salt, alphabet, separators, guards):
+    """Helper method that restores the values encoded in a hashid without
+    argument checks."""
+    parts = tuple(_split(hashid, guards))
+    hashid = parts[1] if 2 <= len(parts) <= 3 else parts[0]
+
+    if not hashid:
+        return
+
+    lottery_char = hashid[0]
+    hashid = hashid[1:]
+
+    hash_parts = _split(hashid, separators)
+    for part in hash_parts:
+        alphabet_salt = (lottery_char + salt + alphabet)[:len(alphabet)]
+        alphabet = _reorder(alphabet, alphabet_salt)
+        yield _unhash(part, alphabet)
+
 class Hashids(object):
     """Hashes and restores values using the "hashids" algorithm."""
     PRIMES = (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43)
@@ -222,25 +240,7 @@ class Hashids(object):
         if not hashid or not _is_str(hashid):
             return ()
         try:
-            return tuple(self._decode(hashid, self._salt, self._alphabet,
-                         self._separators, self._guards))
+            return tuple(_decode(hashid, self._salt, self._alphabet,
+                                 self._separators, self._guards))
         except ValueError:
             return ()
-
-    def _decode(self, hashid, salt, alphabet, separators, guards):
-        """Helper method that restores the values encoded in a hashid without
-        argument checks."""
-        parts = tuple(_split(hashid, guards))
-        hashid = parts[1] if 2 <= len(parts) <= 3 else parts[0]
-
-        if not hashid:
-            return
-
-        lottery_char = hashid[0]
-        hashid = hashid[1:]
-
-        hash_parts = _split(hashid, separators)
-        for part in hash_parts:
-            alphabet_salt = (lottery_char + salt + alphabet)[:len(alphabet)]
-            alphabet = _reorder(alphabet, alphabet_salt)
-            yield _unhash(part, alphabet)
