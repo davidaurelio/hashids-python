@@ -205,40 +205,6 @@ class Hashids(object):
         return _encode(values, self._salt, self._min_length, self._alphabet,
                        self._separators, self._guards)
 
-    def _ensure_length(self, hashid, values, alphabet):
-        """Helper method that extends a hashid if it does not have the
-        minimum lenght."""
-        length = self._min_length
-        salt = self._salt
-        len_hashed = len(hashid)
-        if len_hashed < length:
-            first_index = sum((i + 1) * value for i, value in enumerate(values))
-
-            guards = self._guards
-            len_guards = len(guards)
-            guard_index = first_index % len_guards
-            hashid = guards[guard_index] + hashid
-            len_hashed += 1
-
-            if len_hashed < length:
-                hashid += guards[(guard_index + len_hashed) % len_guards]
-                len_hashed += 1
-
-        while len_hashed < length:
-            pad = ord(alphabet[1]), ord(alphabet[0])
-            pad_left = self._encode(pad, alphabet, salt)[0]
-            pad_right = self._encode(pad, alphabet, '%d%d' % pad)[0]
-            hashid = pad_left + hashid + pad_right
-
-            len_hashed = len(hashid)
-            excess = len_hashed - length
-            if excess > 0:
-                hashid = hashid[excess//2:-excess//2]
-
-            alphabet = list(_reorder(alphabet, salt + hashid))
-
-        return hashid
-
     def decrypt(self, hashid):
         """Restore a tuple of numbers from the passed `hashid`.
 
