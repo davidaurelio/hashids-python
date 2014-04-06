@@ -3,7 +3,6 @@ http://www.hashids.org/. Compatible with Python 2.5--3"""
 from __future__ import division
 from itertools import chain
 from math import ceil
-import re
 
 __version__ = '0.8.3'
 
@@ -46,6 +45,16 @@ def _to_front(value, iterator):
     """Yields `value`, then all other elements from `iterator` if they are not
     equal to `value`."""
     return chain((value,), (x for x in iterator if x != value))
+
+def _split(string, splitters):
+    part = ''
+    for character in string:
+        if character in splitters:
+            yield part
+            part = ''
+        else:
+         part += character
+    yield part
 
 def _hash(number, alphabet):
     """Hashes `number` using the given `alphabet` sequence."""
@@ -135,11 +144,6 @@ def _encode(values, salt, min_length, alphabet, separators, guards):
 
     return encoded
 
-def _re_class(characters):
-    """Creates a regular expression with a character class matching
-    all `characters`."""
-    return re.compile('[%s]' % re.escape(''.join(characters)))
-
 class Hashids(object):
     """Hashes and restores values using the "hashids" algorithm."""
     PRIMES = (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43)
@@ -217,26 +221,25 @@ class Hashids(object):
         if not hashid or not _is_str(hashid):
             return ()
         try:
-            return tuple(self._decode(hashid))
-        except:
+            return tuple(self._decode(hashid, self._salt, self._alphabet,
+                         self._separators, self._guards))
+        except ValueError:
             return ()
 
-    def _decode(self, hashid):
+    def _decode(self, hashid, salt, alphabet, separators, guards):
         """Helper method that restores the values encoded in a hashid without
         argument checks."""
-        parts = self._guards_re.split(hashid)
+        parts = tuple(_split(hashid, guards))
         hashid = parts[1] if 2 <= len(parts) <= 3 else parts[0]
 
-        lottery_char = None
-        hash_parts = self._separators_re.split(hashid)
-        for part in ((i, x) for i, x in enumerate(hash_parts) if x):
-            i, sub_hash = part
-            if i == 0:
-                lottery_char = hashid[0]
-                sub_hash = sub_hash[1:]
-                alphabet = _to_front(lottery_char, self._alphabet)
+        if not hashid:
+            return
 
-            if lottery_char and alphabet:
-                salt = '%d%s' % (ord(lottery_char) & 12345, self._salt)
-                alphabet = list(_reorder(alphabet, salt))
-                yield _unhash(sub_hash, alphabet)
+        lottery_char = hashid[0]
+        hashid = hashid[1:]
+
+        hash_parts = _split(hashid, separators)
+        for part in hash_parts:
+            alphabet_salt = (lottery_char + salt + alphabet)[:len(alphabet)]
+            alphabet = _reorder(alphabet, alphabet_salt)
+            yield _unhash(part, alphabet)
