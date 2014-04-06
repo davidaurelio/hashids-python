@@ -95,6 +95,46 @@ def _reorder(string, salt):
 def _index_from_ratio(dividend, divisor):
     return int(ceil(dividend / divisor))
 
+def _encode(values, salt, min_length, alphabet, separators, guards):
+    """Helper function that does the hash building without argument checks."""
+
+    len_values = len(values)
+    len_alphabet = len(alphabet)
+    len_separators = len(separators)
+    values_hash = sum(x % (i + 100) for i, x in enumerate(values))
+    encoded = lottery = alphabet[values_hash % len(alphabet)]
+
+    last = None
+    for i, value in enumerate(values):
+        alphabet_salt = (lottery + salt + alphabet)[:len_alphabet]
+        alphabet = _reorder(alphabet, alphabet_salt)
+        last = _hash(value, alphabet)
+        encoded += last
+
+        if i < len_values - 1:
+            value %= ord(last[0]) + i
+            encoded += separators[value % len_separators]
+
+    len_guards = len(guards)
+    if len(encoded) < min_length:
+        guard_index = (values_hash + ord(encoded[0])) % len_guards
+        encoded = guards[guard_index] + encoded
+
+        if len(encoded) < min_length:
+            guard_index = (values_hash + ord(encoded[2])) % len_guards
+            encoded += guards[guard_index]
+
+    split_at = len_alphabet // 2
+    while len(encoded) < min_length:
+        alphabet = _reorder(alphabet, alphabet)
+        encoded = alphabet[split_at:] + encoded + alphabet[:split_at]
+        excess = len(encoded) - min_length
+        if excess > 0:
+            from_index = excess // 2
+            encoded = encoded[from_index:from_index+min_length]
+
+    return encoded
+
 def _re_class(characters):
     """Creates a regular expression with a character class matching
     all `characters`."""
@@ -162,53 +202,8 @@ class Hashids(object):
         if not (values and all(_is_uint(x) for x in values)):
             return ''
 
-        return self._encode(values)
-
-    def _encode(self, values):
-        """Helper method that does the hash building without argument checks."""
-
-        alphabet = self._alphabet
-        separators = self._separators
-        salt = self._salt
-        min_length = self._min_length
-
-        len_values = len(values)
-        len_alphabet = len(alphabet)
-        len_separators = len(separators)
-        values_hash = sum(x % (i + 100) for i, x in enumerate(values))
-        encoded = lottery = alphabet[values_hash % len(alphabet)]
-
-        last = None
-        for i, value in enumerate(values):
-            alphabet_salt = (lottery + salt + alphabet)[:len_alphabet]
-            alphabet = _reorder(alphabet, alphabet_salt)
-            last = _hash(value, alphabet)
-            encoded += last
-
-            if i < len_values - 1:
-                value %= ord(last[0]) + i
-                encoded += separators[value % len_separators]
-
-        guards = self._guards
-        len_guards = len(guards)
-        if len(encoded) < min_length:
-            guard_index = (values_hash + ord(encoded[0])) % len_guards
-            encoded = guards[guard_index] + encoded
-
-            if len(encoded) < min_length:
-                guard_index = (values_hash + ord(encoded[2])) % len_guards
-                encoded += guards[guard_index]
-
-        split_at = len_alphabet // 2
-        while len(encoded) < min_length:
-            alphabet = _reorder(alphabet, alphabet)
-            encoded = alphabet[split_at:] + encoded + alphabet[:split_at]
-            excess = len(encoded) - min_length
-            if excess > 0:
-                from_index = excess // 2
-                encoded = encoded[from_index:from_index+min_length]
-
-        return encoded
+        return _encode(values, self._salt, self._min_length, self._alphabet,
+                       self._separators, self._guards)
 
     def _ensure_length(self, hashid, values, alphabet):
         """Helper method that extends a hashid if it does not have the
