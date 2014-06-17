@@ -223,7 +223,9 @@ class Hashids(object):
         if not hashid or not _is_str(hashid):
             return ()
         try:
-            return tuple(_decrypt(hashid, self._salt, self._alphabet,
+            numbers = tuple(_decrypt(hashid, self._salt, self._alphabet,
                                   self._separators, self._guards))
+
+            return numbers if hashid == self.encrypt(*numbers) else ()
         except ValueError:
             return ()
