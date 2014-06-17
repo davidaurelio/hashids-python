@@ -148,3 +148,7 @@ class TestDecryption(object):
         assert h.decrypt('DQCXa4') == (1, 2, 3)
         assert h.decrypt('38V1D') == (60125,)
         assert h.decrypt('373az') == (99, 25)
+
+    def test_only_one_valid(self):
+        h = Hashids(min_length=6)
+        assert h.decrypt(h.encrypt(1)[:-1] + '0') == ()
