@@ -3,7 +3,7 @@ http://www.hashids.org/. Compatible with Python 2.5, 2.6, 2.7 and 3.4+"""
 
 from math import ceil
 
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 
 RATIO_SEPARATORS = 3.5
 RATIO_GUARDS = 12
