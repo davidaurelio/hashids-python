@@ -14,10 +14,12 @@ try:
 except NameError:
     StrType = str
 
+
 # end of compatibility code
 def _is_str(candidate):
     """Returns whether a value is a string."""
     return isinstance(candidate, StrType)
+
 
 def _is_uint(number):
     """Returns whether a value is an unsigned integer."""
@@ -25,6 +27,7 @@ def _is_uint(number):
         return number == int(number) and number >= 0
     except ValueError:
         return False
+
 
 def _split(string, splitters):
     """Splits a string into parts at multiple characters"""
@@ -37,6 +40,7 @@ def _split(string, splitters):
             part += character
     yield part
 
+
 def _hash(number, alphabet):
     """Hashes `number` using the given `alphabet` sequence."""
     hashed = ''
@@ -46,6 +50,7 @@ def _hash(number, alphabet):
         number //= len_alphabet
         if not number:
             return hashed
+
 
 def _unhash(hashed, alphabet):
     """Restores a number tuple from hashed using the given `alphabet` index."""
@@ -57,6 +62,7 @@ def _unhash(hashed, alphabet):
         number += position * len_alphabet ** (len_hash - i - 1)
 
     return number
+
 
 def _reorder(string, salt):
     """Reorders `string` according to `salt`."""
@@ -82,9 +88,11 @@ def _reorder(string, salt):
 
     return string
 
+
 def _index_from_ratio(dividend, divisor):
     """Returns the ceiled ratio of two numbers as int."""
     return int(ceil(float(dividend) / divisor))
+
 
 def _ensure_length(encoded, min_length, alphabet, guards, values_hash):
     """Ensures the minimal hash length"""
@@ -107,6 +115,7 @@ def _ensure_length(encoded, min_length, alphabet, guards, values_hash):
 
     return encoded
 
+
 def _encrypt(values, salt, min_length, alphabet, separators, guards):
     """Helper function that does the hash building without argument checks."""
 
@@ -124,10 +133,11 @@ def _encrypt(values, salt, min_length, alphabet, separators, guards):
         value %= ord(last[0]) + i
         encoded += separators[value % len_separators]
 
-    encoded = encoded[:-1] # cut off last separator
+    encoded = encoded[:-1]  # cut off last separator
 
     return (encoded if len(encoded) >= min_length else
             _ensure_length(encoded, min_length, alphabet, guards, values_hash))
+
 
 def _decrypt(hashid, salt, alphabet, separators, guards):
     """Helper method that restores the values encoded in a hashid without
@@ -146,6 +156,7 @@ def _decrypt(hashid, salt, alphabet, separators, guards):
         alphabet_salt = (lottery_char + salt + alphabet)[:len(alphabet)]
         alphabet = _reorder(alphabet, alphabet_salt)
         yield _unhash(part, alphabet)
+
 
 class Hashids(object):
     """Hashes and restores values using the "hashids" algorithm."""
