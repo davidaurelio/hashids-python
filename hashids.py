@@ -224,7 +224,7 @@ class Hashids(object):
             return ()
         try:
             numbers = tuple(_decrypt(hashid, self._salt, self._alphabet,
-                                  self._separators, self._guards))
+                                     self._separators, self._guards))
 
             return numbers if hashid == self.encrypt(*numbers) else ()
         except ValueError:
