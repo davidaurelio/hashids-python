@@ -7,7 +7,7 @@ A python port of the JavaScript *hashids* implementation. It generates YouTube-l
 Compatibility
 =============
 
-hashids is tested with python 2.5, 2.6, 2.7 and 3.4.
+hashids is tested with python 2.5, 2.6, 2.7, 3.2, 3.3 and 3.4.
 
 .. image:: https://travis-ci.org/davidaurelio/hashids-python.svg?branch=master
     :target: https://travis-ci.org/davidaurelio/hashids-python
