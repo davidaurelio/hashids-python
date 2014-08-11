@@ -110,7 +110,7 @@ This is done by passing the minimum hash length to the constructor. Hashes are p
 .. code:: python
 
   hashids = Hashids(min_length=16)
-  hashid = Hashids.encrypt(1) # '4q2VolejRejNmGQB'
+  hashid = hashids.encrypt(1) # '4q2VolejRejNmGQB'
 
 Using A Custom Alphabet
 -----------------------
