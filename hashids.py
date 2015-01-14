@@ -1,6 +1,8 @@
 """Implements the hashids algorithm in python. For more information, visit
 http://www.hashids.org/. Compatible with Python 2.6, 2.7 and 3"""
 
+import warnings
+from functools import wraps
 from math import ceil
 
 __version__ = '1.0.1'
@@ -116,8 +118,8 @@ def _ensure_length(encoded, min_length, alphabet, guards, values_hash):
     return encoded
 
 
-def _encrypt(values, salt, min_length, alphabet, separators, guards):
-    """Helper function that does the hash building without argument checks."""
+def _encode(values, salt, min_length, alphabet, separators, guards):
+    """Helpe function that does the hash building without argument checks."""
 
     len_alphabet = len(alphabet)
     len_separators = len(separators)
@@ -139,7 +141,7 @@ def _encrypt(values, salt, min_length, alphabet, separators, guards):
             _ensure_length(encoded, min_length, alphabet, guards, values_hash))
 
 
-def _decrypt(hashid, salt, alphabet, separators, guards):
+def _decode(hashid, salt, alphabet, separators, guards):
     """Helper method that restores the values encoded in a hashid without
     argument checks."""
     parts = tuple(_split(hashid, guards))
@@ -156,6 +158,16 @@ def _decrypt(hashid, salt, alphabet, separators, guards):
         alphabet_salt = (lottery_char + salt + alphabet)[:len(alphabet)]
         alphabet = _reorder(alphabet, alphabet_salt)
         yield _unhash(part, alphabet)
+
+def _deprecated(f):
+    @wraps(f)
+    def with_warning(*args, **kwargs):
+        warnings.warn(
+            'The %s method is deprecated and will be removed in v2.*.*' % f.__name__,
+            DeprecationWarning
+        )
+        return f(*args, **kwargs)
+    return with_warning
 
 
 class Hashids(object):
@@ -207,36 +219,40 @@ class Hashids(object):
         self._guards = guards
         self._separators = separators
 
-    def encrypt(self, *values):
+        # Support old API
+        self.decrypt = _deprecated(self.decode)
+        self.encrypt = _deprecated(self.encode)
+
+    def encode(self, *values):
         """Builds a hash from the passed `values`.
 
         :param values The values to transform into a hashid
 
         >>> hashids = Hashids('arbitrary salt', 16, 'abcdefghijkl0123456')
-        >>> hashids.encrypt(1, 23, 456)
+        >>> hashids.encode(1, 23, 456)
         '1d6216i30h53elk3'
         """
         if not (values and all(_is_uint(x) for x in values)):
             return ''
 
-        return _encrypt(values, self._salt, self._min_length, self._alphabet,
-                        self._separators, self._guards)
+        return _encode(values, self._salt, self._min_length, self._alphabet,
+                       self._separators, self._guards)
 
-    def decrypt(self, hashid):
+    def decode(self, hashid):
         """Restore a tuple of numbers from the passed `hashid`.
 
-        :param hashid The hashid to decrypt
+        :param hashid The hashid to decode
 
         >>> hashids = Hashids('arbitrary salt', 16, 'abcdefghijkl0123456')
-        >>> hashids.decrypt('1d6216i30h53elk3')
+        >>> hashids.decode('1d6216i30h53elk3')
         (1, 23, 456)
         """
         if not hashid or not _is_str(hashid):
             return ()
         try:
-            numbers = tuple(_decrypt(hashid, self._salt, self._alphabet,
-                                     self._separators, self._guards))
+            numbers = tuple(_decode(hashid, self._salt, self._alphabet,
+                                    self._separators, self._guards))
 
-            return numbers if hashid == self.encrypt(*numbers) else ()
+            return numbers if hashid == self.encode(*numbers) else ()
         except ValueError:
             return ()
