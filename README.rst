@@ -57,46 +57,46 @@ Import the constructor from the ``hashids`` module:
 Basic Usage
 -----------
 
-Encrypt a single integer:
+Encode a single integer:
 
 .. code:: python
 
-  hashid = hashids.encrypt(123) # 'Mj3'
+  hashid = hashids.encode(123) # 'Mj3'
 
-Decrypt a hash:
-
-.. code:: python
-
-  ints = hashids.decrypt('xoz') # (456,)
-
-To encrypt several integers, pass them all at once:
+Decode a hash:
 
 .. code:: python
 
-  hashid = hashids.encrypt(123, 456, 789) # 'El3fkRIo3'
+  ints = hashids.decode('xoz') # (456,)
 
-Decryption is done the same way:
+To encode several integers, pass them all at once:
 
 .. code:: python
 
-  ints = hashids.decrypt('1B8UvJfXm') # (517, 729, 185)
+  hashid = hashids.encode(123, 456, 789) # 'El3fkRIo3'
+
+Decoding is done the same way:
+
+.. code:: python
+
+  ints = hashids.decode('1B8UvJfXm') # (517, 729, 185)
 
 Using A Custom Salt
 -------------------
 
-Hashids supports salting hashes by accepting a salt value. If you don’t want others to decrypt your hashes, provide a unique string to the constructor.
+Hashids supports salting hashes by accepting a salt value. If you don’t want others to decode your hashes, provide a unique string to the constructor.
 
 .. code:: python
 
   hashids = Hashids(salt='this is my salt 1')
-  hashid = hashids.encrypt(123) # 'nVB'
+  hashid = hashids.encode(123) # 'nVB'
 
 The generated hash changes whenever the salt is changed:
 
 .. code:: python
 
   hashids = Hashids(salt='this is my salt 2')
-  hashid = hashids.encrypt(123) # 'ojK'
+  hashid = hashids.encode(123) # 'ojK'
 
 A salt string between 6 and 32 characters provides decent randomization.
 
@@ -110,7 +110,7 @@ This is done by passing the minimum hash length to the constructor. Hashes are p
 .. code:: python
 
   hashids = Hashids(min_length=16)
-  hashid = hashids.encrypt(1) # '4q2VolejRejNmGQB'
+  hashid = hashids.encode(1) # '4q2VolejRejNmGQB'
 
 Using A Custom Alphabet
 -----------------------
@@ -122,7 +122,7 @@ To have only lowercase letters in your hashes, pass in the following custom alph
 .. code:: python
 
   hashids = Hashids(alphabet='abcdefghijklmnopqrstuvwxyz')
-  hashid = hashids.encrypt(123456789) # 'kekmyzyk'
+  hashid = hashids.encode(123456789) # 'kekmyzyk'
 
 A custom alphabet must contain at least 16 characters.
 
@@ -139,19 +139,19 @@ There are no repeating patterns that might show that there are 4 identical numbe
 .. code:: python
 
   hashids = Hashids("this is my salt")
-  hashids.encrypt(5, 5, 5, 5) # '1Wc8cwcE'
+  hashids.encode(5, 5, 5, 5) # '1Wc8cwcE'
 
 The same is valid for incremented numbers:
 
 .. code:: python
 
-  hashids.encrypt(1, 2, 3, 4, 5, 6, 7, 8, 9, 10) # 'kRHnurhptKcjIDTWC3sx'
+  hashids.encode(1, 2, 3, 4, 5, 6, 7, 8, 9, 10) # 'kRHnurhptKcjIDTWC3sx'
 
-  hashids.encrypt(1) # 'NV'
-  hashids.encrypt(2) # '6m'
-  hashids.encrypt(3) # 'yD'
-  hashids.encrypt(4) # '2l'
-  hashids.encrypt(5) # 'rD'
+  hashids.encode(1) # 'NV'
+  hashids.encode(2) # '6m'
+  hashids.encode(3) # 'yD'
+  hashids.encode(4) # '2l'
+  hashids.encode(5) # 'rD'
 
 Curses! #$%@
 ============
