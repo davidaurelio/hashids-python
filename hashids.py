@@ -3,24 +3,13 @@ http://www.hashids.org/. Compatible with Python 2.6, 2.7 and 3"""
 
 import warnings
 from functools import wraps
+from past.builtins import basestring
 from math import ceil
 
 __version__ = '1.0.1'
 
 RATIO_SEPARATORS = 3.5
 RATIO_GUARDS = 12
-
-# Python 2/3 compatibility code
-try:
-    StrType = basestring
-except NameError:
-    StrType = str
-
-
-# end of compatibility code
-def _is_str(candidate):
-    """Returns whether a value is a string."""
-    return isinstance(candidate, StrType)
 
 
 def _is_uint(number):
@@ -247,7 +236,7 @@ class Hashids(object):
         >>> hashids.decode('1d6216i30h53elk3')
         (1, 23, 456)
         """
-        if not hashid or not _is_str(hashid):
+        if not hashid or not isinstance(hashid, basestring):
             return ()
         try:
             numbers = tuple(_decode(hashid, self._salt, self._alphabet,
