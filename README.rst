@@ -19,7 +19,7 @@ Compatibility with the JavaScript implementation
 hashids/JavaScript   hashids/Python
 ------------------   --------------
 v0.1.x               v0.8.x
-v0.3.x               v1.0.x
+v0.3.x and v1.0.x    v1.0.2+
 ==================   ==============
 
 The JavaScript implementation produces different hashes in versions 0.1.x and 0.3.x. For compatibility with the older 0.1.x version install hashids 0.8.4 from pip, otherwise the newest hashids.
