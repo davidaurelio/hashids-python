@@ -2,9 +2,10 @@
 from setuptools import setup
 from os.path import dirname, join
 from codecs import open
+from .hashids import __version__ as version
 
 setup(name='hashids',
-      version='1.0.1',
+      version=version,
       description='Python implementation of hashids (http://www.hashids.org).'
                   'Compatible with python 2.6, 2.7 and 3.3+.',
       long_description=open(join(dirname(__file__), 'README.rst'), encoding='utf-8').read(),
