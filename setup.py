@@ -2,7 +2,7 @@
 from setuptools import setup
 from os.path import dirname, join
 from codecs import open
-from .hashids import __version__ as version
+from hashids import __version__ as version
 
 setup(name='hashids',
       version=version,
