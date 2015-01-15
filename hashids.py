@@ -1,5 +1,5 @@
 """Implements the hashids algorithm in python. For more information, visit
-http://www.hashids.org/. Compatible with Python 2.6, 2.7 and 3"""
+http://www.hashids.org/. Compatible with Python 2.6, 2.7 and 3.3+"""
 
 import warnings
 from functools import wraps
