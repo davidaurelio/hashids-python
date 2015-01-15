@@ -108,7 +108,7 @@ def _ensure_length(encoded, min_length, alphabet, guards, values_hash):
 
 
 def _encode(values, salt, min_length, alphabet, separators, guards):
-    """Helpe function that does the hash building without argument checks."""
+    """Helper function that does the hash building without argument checks."""
 
     len_alphabet = len(alphabet)
     len_separators = len(separators)
