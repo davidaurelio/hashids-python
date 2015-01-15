@@ -1,12 +1,12 @@
 """Implements the hashids algorithm in python. For more information, visit
 http://www.hashids.org/. Compatible with Python 2.6, 2.7 and 3.3+"""
 
+__version__ = '1.0.2'
+
 import warnings
 from functools import wraps
 from past.builtins import basestring
 from math import ceil
-
-__version__ = '1.0.2'
 
 RATIO_SEPARATORS = 3.5
 RATIO_GUARDS = 12

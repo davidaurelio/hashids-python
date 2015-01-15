@@ -2,7 +2,14 @@
 from setuptools import setup
 from os.path import dirname, join
 from codecs import open
-from hashids import __version__ as version
+
+module = {}
+try:
+    execfile('./hashids.py', module)
+except:
+    pass
+
+version = module['__version__']
 
 setup(name='hashids',
       version=version,
