@@ -6,5 +6,4 @@ python:
   - "3.4"
   - "pypy"
   - "pypy3"
-install: pip install .
 script: python -m pytest
