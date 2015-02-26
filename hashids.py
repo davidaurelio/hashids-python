@@ -10,14 +10,12 @@ from math import ceil
 RATIO_SEPARATORS = 3.5
 RATIO_GUARDS = 12
 
-# Python 2/3 compatibility code
 try:
     StrType = basestring
 except NameError:
     StrType = str
 
 
-# end of compatibility code
 def _is_str(candidate):
     """Returns whether a value is a string."""
     return isinstance(candidate, StrType)
