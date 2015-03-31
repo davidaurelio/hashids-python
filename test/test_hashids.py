@@ -6,7 +6,7 @@ class TestConstructor(object):
         pytest.raises(ValueError, Hashids, alphabet='abcabc')
 
 
-class TestEncryption(object):
+class TestEncoding(object):
     def test_empty_call(self):
         assert Hashids().encode() == ''
 
@@ -76,7 +76,7 @@ class TestEncryption(object):
     def test_float_call(self):
         assert Hashids().encode(1, 2.5, 3) == ''
 
-class TestDecryption(object):
+class TestDecoding(object):
     def test_empty_string(self):
         assert Hashids().decode('') == ()
 
