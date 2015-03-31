@@ -258,3 +258,28 @@ class Hashids(object):
             return numbers if hashid == self.encode(*numbers) else ()
         except ValueError:
             return ()
+
+    def encode_hex(self, hex_str):
+        """Converts a hexadecimal string (e.g. a MongoDB id) to a hashid.
+
+        :param hex_str The hexadecimal string to encodes
+
+        >>> Hashids.encode_hex('507f1f77bcf86cd799439011')
+        'y42LW46J9luq3Xq9XMly'
+        """
+        numbers = (int('1' + hex_str[i:i+12], 16)
+                   for i in range(0, len(hex_str), 12))
+        try:
+            return self.encode(*numbers)
+        except ValueError:
+            return ''
+
+    def decode_hex(self, hashid):
+        """Restores a hexadecimal string (e.g. a MongoDB id) from a hashid.
+
+        :param hashid The hashid to decode
+
+        >>> Hashids.decode_hex('y42LW46J9luq3Xq9XMly')
+        '507f1f77bcf86cd799439011'
+        """
+        return ''.join(('%x' % x)[1:] for x in self.decode(hashid))

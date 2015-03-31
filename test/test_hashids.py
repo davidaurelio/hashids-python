@@ -76,6 +76,16 @@ class TestEncoding(object):
     def test_float_call(self):
         assert Hashids().encode(1, 2.5, 3) == ''
 
+    def test_encode_hex(self):
+        assert Hashids().encode_hex('507f1f77bcf86cd799439011') == 'y42LW46J9luq3Xq9XMly'
+        assert len(Hashids(min_length=1000).encode_hex('507f1f77bcf86cd799439011')) >= 1000
+        assert Hashids().encode_hex('f000000000000000000000000000000000000000000000000000000000000000000000000000000000000f') == \
+               'WxMLpERDrmh25Lp4L3xEfM6WovWYO3IjkRMKR2ogCMVzn4zQlqt1WK8jKq7OsEpy2qyw1Vi2p'
+
+    def test_illegal_hex(self):
+        assert Hashids().encode_hex('') == ''
+        assert Hashids().encode_hex('1234SGT8') == ''
+
 class TestDecoding(object):
     def test_empty_string(self):
         assert Hashids().decode('') == ()
@@ -152,3 +162,15 @@ class TestDecoding(object):
     def test_only_one_valid(self):
         h = Hashids(min_length=6)
         assert h.decode(h.encode(1)[:-1] + '0') == ()
+
+    def test_decode_hex(self):
+        hex_str = '507f1f77bcf86cd799439011'
+        assert Hashids().decode_hex('y42LW46J9luq3Xq9XMly') == hex_str
+        h = Hashids(min_length=1000)
+        assert h.decode_hex(h.encode_hex(hex_str)) == hex_str
+        assert Hashids().decode_hex('WxMLpERDrmh25Lp4L3xEfM6WovWYO3IjkRMKR2ogCMVzn4zQlqt1WK8jKq7OsEpy2qyw1Vi2p') == \
+               'f000000000000000000000000000000000000000000000000000000000000000000000000000000000000f'
+
+    def test_illegal_decode_hex(self):
+        assert Hashids().decode_hex('') == ''
+        assert Hashids().decode_hex('WxMLpERDrmh25Lp4L3xEfM6WovWYO3IjkRMKR2ogCMVlqt1WK8jKq7OsEp1Vi2p') == ''
