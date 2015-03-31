@@ -4,7 +4,7 @@ from os.path import dirname, join
 from codecs import open
 
 setup(name='hashids',
-      version='1.0.3',
+      version='1.1.0',
       description='Python implementation of hashids (http://www.hashids.org).'
                   'Compatible with python 2.6-3.',
       long_description=open(join(dirname(__file__), 'README.rst'), encoding='utf-8').read(),
