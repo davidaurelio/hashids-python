@@ -1,11 +1,11 @@
 """Implements the hashids algorithm in python. For more information, visit
 http://www.hashids.org/. Compatible with Python 2.6, 2.7 and 3"""
 
-__version__ = '1.0.3'
-
 import warnings
 from functools import wraps
 from math import ceil
+
+__version__ = '1.0.3'
 
 RATIO_SEPARATORS = 3.5
 RATIO_GUARDS = 12
@@ -157,14 +157,18 @@ def _decode(hashid, salt, alphabet, separators, guards):
         alphabet = _reorder(alphabet, alphabet_salt)
         yield _unhash(part, alphabet)
 
-def _deprecated(f):
-    @wraps(f)
+
+def _deprecated(func):
+    """A decorator that warns about deprecation when the passed-in function is
+    invoked."""
+    @wraps(func)
     def with_warning(*args, **kwargs):
         warnings.warn(
-            'The %s method is deprecated and will be removed in v2.*.*' % f.__name__,
+            ('The %s method is deprecated and will be removed in v2.*.*' %
+             func.__name__),
             DeprecationWarning
         )
-        return f(*args, **kwargs)
+        return func(*args, **kwargs)
     return with_warning
 
 
