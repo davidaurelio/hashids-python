@@ -55,12 +55,12 @@ def _hash(number, alphabet):
 def _unhash(hashed, alphabet):
     """Restores a number tuple from hashed using the given `alphabet` index."""
     number = 0
-    len_hash = len(hashed)
     len_alphabet = len(alphabet)
-    for i, character in enumerate(hashed):
+    base = 1
+    for character in hashed[::-1]:
         position = alphabet.index(character)
-        number += position * len_alphabet ** (len_hash - i - 1)
-
+        number += position * base
+        base *= len_alphabet
     return number
 
 
