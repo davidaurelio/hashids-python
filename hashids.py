@@ -199,14 +199,12 @@ class Hashids(object):
         separators = _reorder(separators, salt)
 
         min_separators = _index_from_ratio(len_alphabet, RATIO_SEPARATORS)
-        if not separators or len_separators < min_separators:
-            if min_separators == 1:
-                min_separators = 2
-            if min_separators > len_separators:
-                split_at = min_separators - len_separators
-                separators += alphabet[:split_at]
-                alphabet = alphabet[split_at:]
-                len_alphabet = len(alphabet)
+
+        number_of_missing_separators = min_separators - len_separators
+        if number_of_missing_separators > 0:
+            separators += alphabet[:number_of_missing_separators]
+            alphabet = alphabet[number_of_missing_separators:]
+            len_alphabet = len(alphabet)
 
         alphabet = _reorder(alphabet, salt)
         num_guards = _index_from_ratio(len_alphabet, RATIO_GUARDS)
