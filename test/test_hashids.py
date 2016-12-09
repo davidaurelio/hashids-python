@@ -1,9 +1,13 @@
 from hashids import Hashids
 import pytest
 
+
 class TestConstructor(object):
-    def test_small_alphabet(self):
-        pytest.raises(ValueError, Hashids, alphabet='abcabc')
+    def test_small_alphabet_with_no_repeating_characters(self):
+        pytest.raises(ValueError, Hashids, alphabet='abcdefghijklmno')
+
+    def test_small_alphabet_with_repeating_characters(self):
+        pytest.raises(ValueError, Hashids, alphabet='abcdecfghijklbmnoa')
 
 
 class TestEncoding(object):
