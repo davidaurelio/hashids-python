@@ -55,12 +55,12 @@ def _hash(number, alphabet):
 def _unhash(hashed, alphabet):
     """Restores a number tuple from hashed using the given `alphabet` index."""
     number = 0
-    len_hash = len(hashed)
     len_alphabet = len(alphabet)
-    for i, character in enumerate(hashed):
+    base = 1
+    for character in hashed[::-1]:
         position = alphabet.index(character)
-        number += position * len_alphabet ** (len_hash - i - 1)
-
+        number += position * base
+        base *= len_alphabet
     return number
 
 
@@ -68,23 +68,16 @@ def _reorder(string, salt):
     """Reorders `string` according to `salt`."""
     len_salt = len(salt)
 
-    if len_salt == 0:
-        return string
-
-    i, index, integer_sum = len(string) - 1, 0, 0
-    while i > 0:
-        index %= len_salt
-        integer = ord(salt[index])
-        integer_sum += integer
-        j = (integer + index + integer_sum) % i
-
-        temp = string[j]
-        trailer = string[j+1:] if j + 1 < len(string) else ''
-        string = string[0:j] + string[i] + trailer
-        string = string[0:i] + temp + string[i+1:]
-
-        i -= 1
-        index += 1
+    if len_salt != 0:
+        string = list(string)
+        index, integer_sum = 0, 0
+        for i in range(len(string) - 1, 0, -1):
+            integer = ord(salt[index])
+            integer_sum += integer
+            j = (integer + index + integer_sum) % i
+            string[i], string[j] = string[j], string[i]
+            index = (index + 1) % len_salt
+        string = ''.join(string)
 
     return string
 
