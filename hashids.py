@@ -117,7 +117,6 @@ def _encode(values, salt, min_length, alphabet, separators, guards):
     values_hash = sum(x % (i + 100) for i, x in enumerate(values))
     encoded = lottery = alphabet[values_hash % len(alphabet)]
 
-    last = None
     for i, value in enumerate(values):
         alphabet_salt = (lottery + salt + alphabet)[:len_alphabet]
         alphabet = _reorder(alphabet, alphabet_salt)
