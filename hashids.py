@@ -47,7 +47,7 @@ def _hash(number, alphabet):
     len_alphabet = len(alphabet)
     while True:
         hashed = alphabet[number % len_alphabet] + hashed
-        number //= len_alphabet
+        number /= len_alphabet
         if not number:
             return hashed
 
