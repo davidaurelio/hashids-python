@@ -166,19 +166,24 @@ def _deprecated(func):
 class Hashids(object):
     """Hashes and restores values using the "hashids" algorithm."""
     ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+    CURSES = 'cfhistuCFHISTU'
 
-    def __init__(self, salt='', min_length=0, alphabet=ALPHABET):
+    def __init__(self, salt='', min_length=0, alphabet=ALPHABET, curses=CURSES,
+                 ratio_separators=RATIO_SEPARATORS, ratio_guards=RATIO_GUARDS):
         """
         Initializes a Hashids object with salt, minimum length, and alphabet.
 
         :param salt: A string influencing the generated hash ids.
         :param min_length: The minimum length for generated hashes
         :param alphabet: The characters to use for the generated hash ids.
+        :param curses: Custom curse list.
+        :param ratio_separators: Ratio used when determine the minimum amount of separators.
+        :param ratio_guards: Ratio used when determine the minimum amount of guards.
         """
         self._min_length = max(int(min_length), 0)
         self._salt = salt
 
-        separators = ''.join(x for x in 'cfhistuCFHISTU' if x in alphabet)
+        separators = ''.join(x for x in curses if x in alphabet)
         alphabet = ''.join(x for i, x in enumerate(alphabet)
                            if alphabet.index(x) == i and x not in separators)
 
@@ -189,7 +194,7 @@ class Hashids(object):
 
         separators = _reorder(separators, salt)
 
-        min_separators = _index_from_ratio(len_alphabet, RATIO_SEPARATORS)
+        min_separators = _index_from_ratio(len_alphabet, ratio_separators)
 
         number_of_missing_separators = min_separators - len_separators
         if number_of_missing_separators > 0:
@@ -198,7 +203,7 @@ class Hashids(object):
             len_alphabet = len(alphabet)
 
         alphabet = _reorder(alphabet, salt)
-        num_guards = _index_from_ratio(len_alphabet, RATIO_GUARDS)
+        num_guards = _index_from_ratio(len_alphabet, ratio_guards)
         if len_alphabet < 3:
             guards = separators[:num_guards]
             separators = separators[num_guards:]
@@ -209,15 +214,38 @@ class Hashids(object):
         self._alphabet = alphabet
         self._guards = guards
         self._separators = separators
+        self._ratio_separators = ratio_separators
+        self._ratio_guards = ratio_guards
 
         # Support old API
         self.decrypt = _deprecated(self.decode)
         self.encrypt = _deprecated(self.encode)
 
-    def encode(self, *values):
+    @property
+    def ratio_separators(self):
+        return self.ratio_separators
+
+    @property
+    def ratio_guards(self):
+        return self.ratio_guards
+
+    @property
+    def alphabet(self):
+        return self._alphabet
+
+    @property
+    def guards(self):
+        return self._guards
+
+    @property
+    def separators(self):
+        return self._separators
+
+    def encode(self, verify=False, *values):
         """Builds a hash from the passed `values`.
 
-        :param values The values to transform into a hashid
+        :param verify: Verify encoding result before return it. ``None`` will be returned if verification failed.
+        :param values: The values to transform into a hashid
 
         >>> hashids = Hashids('arbitrary salt', 16, 'abcdefghijkl0123456')
         >>> hashids.encode(1, 23, 456)
@@ -226,8 +254,15 @@ class Hashids(object):
         if not (values and all(_is_uint(x) for x in values)):
             return ''
 
-        return _encode(values, self._salt, self._min_length, self._alphabet,
-                       self._separators, self._guards)
+        result = _encode(values, self._salt, self._min_length, self._alphabet,
+                         self._separators, self._guards)
+
+        if not verify:
+            return result
+
+        if not self.decode(result) == values:
+            return None
+        return result
 
     def decode(self, hashid):
         """Restore a tuple of numbers from the passed `hashid`.
