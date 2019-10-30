@@ -46,6 +46,13 @@ class TestEncoding(object):
         assert h.encode(23832) == 'Z6R>'
         assert h.encode(99, 25) == 'AYyIB'
 
+    def test_short_alphabet(self):
+        h = Hashids(alphabet='ABcfhistuCFHISTU')
+        assert h.encode(2839, 12, 32, 5) == 'AABAABBBABAAAuBBAAUABBBBBCBAB'
+        assert h.encode(1, 2, 3) == 'AAhBAiAA'
+        assert h.encode(23832) == 'AABAAABABBBAABBB'
+        assert h.encode(99, 25) == 'AAABBBAAHBBAAB'
+
     def test_min_length(self):
         h = Hashids(min_length=25)
         assert h.encode(7452, 2967, 21401) == 'pO3K69b86jzc6krI416enr2B5'
