@@ -149,14 +149,14 @@ def _decode(hashid, salt, alphabet, separators, guards):
         yield _unhash(part, alphabet)
 
 
-def _deprecated(func):
+def _deprecated(func, name):
     """A decorator that warns about deprecation when the passed-in function is
     invoked."""
     @wraps(func)
     def with_warning(*args, **kwargs):
         warnings.warn(
             ('The %s method is deprecated and will be removed in v2.*.*' %
-             func.__name__),
+             name),
             DeprecationWarning
         )
         return func(*args, **kwargs)
@@ -211,8 +211,8 @@ class Hashids(object):
         self._separators = separators
 
         # Support old API
-        self.decrypt = _deprecated(self.decode)
-        self.encrypt = _deprecated(self.encode)
+        self.decrypt = _deprecated(self.decode, "decrypt")
+        self.encrypt = _deprecated(self.encode, "encrypt")
 
     def encode(self, *values):
         """Builds a hash from the passed `values`.
