@@ -3,7 +3,7 @@
 The format is based on [Keep a Changelog],
 and this project adheres to [Semantic Versioning].
 
-## Unreleased
+## [1.3.1] - 2020-07-26
 ### Fixed
 
 Python requirement changed to `>=2.7`
@@ -56,6 +56,7 @@ Added
   - initial release, compatible with JS version 0.1.x
 
 
+[1.3.0]: https://github.com/davidaurelio/hashids-python/compare/1.3.0...1.3.1
 [1.3.0]: https://github.com/davidaurelio/hashids-python/compare/1.2.0...1.3.0
 [1.2.0]: https://github.com/davidaurelio/hashids-python/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/davidaurelio/hashids-python/compare/1.0.3...1.1.0
