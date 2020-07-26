@@ -3,6 +3,11 @@
 The format is based on [Keep a Changelog],
 and this project adheres to [Semantic Versioning].
 
+## Unreleased
+### Fixed
+
+Python requirement changed to `>=2.7`
+
 ## 1.3.0 - 2020-07-26
 
 ### Added
