@@ -1,0 +1,37 @@
+[build-system]
+requires = ["flit_core >=2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.metadata]
+module = "hashids"
+author = "David Aurelio"
+author-email = "dev@david-aurelio.com"
+home-page = "https://hashids.org/python/"
+description-file="README.rst"
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 2",
+  "Programming Language :: Python :: 2.7",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.5",
+  "Programming Language :: Python :: 3.6",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+]
+requires-python = "~=2.7,~=3.5"
+
+[tool.flit.metadata.requires-extra]
+test = [
+    "pytest >=2.1.0",
+]
+
+[tool.flit.sdist]
+include = [
+  "CHANGELOG",
+  "hashids.py",
+  "LICENSE",
+  "pyproject.toml",
+  "README.rst",
+  "test/*.py",
+]
+exclude = [ ".*" ]
