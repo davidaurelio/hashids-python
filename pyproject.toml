@@ -27,7 +27,7 @@ test = [
 
 [tool.flit.sdist]
 include = [
-  "CHANGELOG",
+  "CHANGELOG.md",
   "hashids.py",
   "LICENSE",
   "pyproject.toml",
