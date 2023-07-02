@@ -1,0 +1,20 @@
+{
+    "python.linting.enabled": true,
+    "python.linting.mypyEnabled": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.mypyArgs": [
+      "--ignore-missing-imports",
+      "--follow-imports=silent",
+      "--strict",
+      "--show-column-numbers",
+      "--allow-untyped-decorators"
+    ],
+    "python.formatting.provider": "black",
+    "python.testing.pytestArgs": [
+      "test"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "editor.formatOnSave": true,
+    "files.autoSave": "off"
+  }

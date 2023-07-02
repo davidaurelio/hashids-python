@@ -1,5 +1,5 @@
 ==========================
-hashids for Python 2.7 & 3
+hashids for Python 3
 ==========================
 
 A python port of the JavaScript *hashids* implementation. It generates YouTube-like hashes from one or many numbers. Use hashids when you do not want to expose your database ids to the user. Website: http://www.hashids.org/
@@ -7,7 +7,7 @@ A python port of the JavaScript *hashids* implementation. It generates YouTube-l
 Compatibility
 =============
 
-hashids is tested with python 2.7 and 3.5–3.8. PyPy and PyPy 3 work as well.
+hashids is tested with python 3.5–3.11. PyPy and PyPy 3 work as well.
 
 .. image:: https://travis-ci.org/davidaurelio/hashids-python.svg?branch=master
     :target: https://travis-ci.org/davidaurelio/hashids-python
