@@ -1,0 +1,42 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.194.3/containers/vue
+{
+	"name": "hashids-devcontainer",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "devcontainer",
+	"workspaceFolder": "/workspace",
+	// Set *default* container specific settings.json values on container create.
+	"customizations": {
+		"vscode": {
+			"terminal.integrated.profiles.linux": {
+				"bash": {
+					"path": "/bin/bash"
+				}
+			},
+			"python.pythonPath": "/usr/local/bin/python",
+			"python.defaultInterpreterPath": "/usr/local/bin/python",
+			"python.languageServer": "Default",
+			"python.linting.enabled": true,
+			"python.linting.pylintEnabled": true,
+			"python.formatting.autopep8Path": "/usr/local/py-utils/bin/autopep8",
+			"python.formatting.blackPath": "/usr/local/py-utils/bin/black",
+			"python.formatting.yapfPath": "/usr/local/py-utils/bin/yapf",
+			"python.linting.banditPath": "/usr/local/py-utils/bin/bandit",
+			"python.linting.flake8Path": "/usr/local/py-utils/bin/flake8",
+			"python.linting.mypyPath": "/usr/local/py-utils/bin/mypy",
+			"python.linting.pycodestylePath": "/usr/local/py-utils/bin/pycodestyle",
+			"python.linting.pydocstylePath": "/usr/local/py-utils/bin/pydocstyle",
+			"python.linting.pylintPath": "/usr/local/py-utils/bin/pylint",
+			// Add the IDs of extensions you want installed when the container is created.
+			"extensions": [
+				"ms-python.vscode-pylance",
+				"ms-python.python",
+				"charliermarsh.ruff"
+			]
+		}
+	},
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "poetry config virtualenvs.create false && poetry update && poetry install",
+	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+	"remoteUser": "vscode"
+}

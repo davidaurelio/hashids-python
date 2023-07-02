@@ -1,3 +1,5 @@
 MANIFEST
 dist/
 hashids.egg-info/
+poetry.lock
+__pycache__
