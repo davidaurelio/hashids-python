@@ -2,28 +2,28 @@
 requires = ["flit_core >=2,<4"]
 build-backend = "flit_core.buildapi"
 
+[tool.black]
+line-length = 100
+
 [tool.flit.metadata]
 module = "hashids"
 author = "David Aurelio"
 author-email = "dev@david-aurelio.com"
 home-page = "https://hashids.org/python/"
-description-file="README.rst"
+description-file = "README.rst"
 classifiers = [
   "License :: OSI Approved :: MIT License",
-  "Programming Language :: Python :: 2",
-  "Programming Language :: Python :: 2.7",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.5",
-  "Programming Language :: Python :: 3.6",
+  "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
 ]
-requires-python = ">=2.7"
+requires-python = ">=3.7"
 
 [tool.flit.metadata.requires-extra]
-test = [
-    "pytest >=2.1.0",
-]
+test = ["pytest >=2.1.0"]
 
 [tool.flit.sdist]
 include = [
@@ -34,4 +34,4 @@ include = [
   "README.rst",
   "test/*.py",
 ]
-exclude = [ ".*" ]
+exclude = [".*"]

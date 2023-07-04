@@ -1,26 +1,25 @@
 """Implements the hashids algorithm in python. For more information, visit http://hashids.org/"""
 
-import warnings
-from functools import wraps
-from math import ceil
+from __future__ import annotations
 
-__version__ = '1.3.1'
+import functools
+import math
+import warnings
+from collections.abc import Callable, Iterable, Iterator
+from typing import TypeVar
+
+from typing_extensions import ParamSpec
+
+__version__ = "1.3.1"
+
+_P = ParamSpec("_P")
+_T = TypeVar("_T")
 
 RATIO_SEPARATORS = 3.5
 RATIO_GUARDS = 12
 
-try:
-    StrType = basestring
-except NameError:
-    StrType = str
 
-
-def _is_str(candidate):
-    """Returns whether a value is a string."""
-    return isinstance(candidate, StrType)
-
-
-def _is_uint(number):
+def _is_uint(number: int) -> bool:
     """Returns whether a value is an unsigned integer."""
     try:
         return number == int(number) and number >= 0
@@ -28,21 +27,21 @@ def _is_uint(number):
         return False
 
 
-def _split(string, splitters):
+def _split(string: str, splitters: str) -> Iterator[str]:
     """Splits a string into parts at multiple characters"""
-    part = ''
+    part = ""
     for character in string:
         if character in splitters:
             yield part
-            part = ''
+            part = ""
         else:
             part += character
     yield part
 
 
-def _hash(number, alphabet):
+def _hash(number: int, alphabet: str) -> str:
     """Hashes `number` using the given `alphabet` sequence."""
-    hashed = ''
+    hashed = ""
     len_alphabet = len(alphabet)
     while True:
         hashed = alphabet[number % len_alphabet] + hashed
@@ -51,7 +50,7 @@ def _hash(number, alphabet):
             return hashed
 
 
-def _unhash(hashed, alphabet):
+def _unhash(hashed: str, alphabet: str) -> int:
     """Restores a number tuple from hashed using the given `alphabet` index."""
     number = 0
     len_alphabet = len(alphabet)
@@ -62,30 +61,32 @@ def _unhash(hashed, alphabet):
     return number
 
 
-def _reorder(string, salt):
+def _reorder(string: str, salt: str) -> str:
     """Reorders `string` according to `salt`."""
     len_salt = len(salt)
 
     if len_salt != 0:
-        string = list(string)
+        chars = list(string)
         index, integer_sum = 0, 0
-        for i in range(len(string) - 1, 0, -1):
+        for i in range(len(chars) - 1, 0, -1):
             integer = ord(salt[index])
             integer_sum += integer
             j = (integer + index + integer_sum) % i
-            string[i], string[j] = string[j], string[i]
+            chars[i], chars[j] = chars[j], chars[i]
             index = (index + 1) % len_salt
-        string = ''.join(string)
+        string = "".join(chars)
 
     return string
 
 
-def _index_from_ratio(dividend, divisor):
+def _index_from_ratio(dividend: int, divisor: float) -> int:
     """Returns the ceiled ratio of two numbers as int."""
-    return int(ceil(float(dividend) / divisor))
+    return int(math.ceil(float(dividend) / divisor))
 
 
-def _ensure_length(encoded, min_length, alphabet, guards, values_hash):
+def _ensure_length(
+    encoded: str, min_length: int, alphabet: str, guards: str, values_hash: int
+) -> str:
     """Ensures the minimal hash length"""
     len_guards = len(guards)
     guard_index = (values_hash + ord(encoded[0])) % len_guards
@@ -102,14 +103,15 @@ def _ensure_length(encoded, min_length, alphabet, guards, values_hash):
         excess = len(encoded) - min_length
         if excess > 0:
             from_index = excess // 2
-            encoded = encoded[from_index:from_index+min_length]
+            encoded = encoded[from_index : from_index + min_length]
 
     return encoded
 
 
-def _encode(values, salt, min_length, alphabet, separators, guards):
+def _encode(
+    values: Iterable[int], salt: str, min_length: int, alphabet: str, separators: str, guards: str
+) -> str:
     """Helper function that does the hash building without argument checks."""
-
     len_alphabet = len(alphabet)
     len_separators = len(separators)
     values_hash = sum(x % (i + 100) for i, x in enumerate(values))
@@ -125,13 +127,15 @@ def _encode(values, salt, min_length, alphabet, separators, guards):
 
     encoded = encoded[:-1]  # cut off last separator
 
-    return (encoded if len(encoded) >= min_length else
-            _ensure_length(encoded, min_length, alphabet, guards, values_hash))
+    return (
+        encoded
+        if len(encoded) >= min_length
+        else _ensure_length(encoded, min_length, alphabet, guards, values_hash)
+    )
 
 
-def _decode(hashid, salt, alphabet, separators, guards):
-    """Helper method that restores the values encoded in a hashid without
-    argument checks."""
+def _decode(hashid: str, salt: str, alphabet: str, separators: str, guards: str) -> Iterator[int]:
+    """Helper method that restores the values encoded in a hashid without argument checks."""
     parts = tuple(_split(hashid, guards))
     hashid = parts[1] if 2 <= len(parts) <= 3 else parts[0]
 
@@ -143,30 +147,29 @@ def _decode(hashid, salt, alphabet, separators, guards):
 
     hash_parts = _split(hashid, separators)
     for part in hash_parts:
-        alphabet_salt = (lottery_char + salt + alphabet)[:len(alphabet)]
+        alphabet_salt = (lottery_char + salt + alphabet)[: len(alphabet)]
         alphabet = _reorder(alphabet, alphabet_salt)
         yield _unhash(part, alphabet)
 
 
-def _deprecated(func, name):
-    """A decorator that warns about deprecation when the passed-in function is
-    invoked."""
-    @wraps(func)
-    def with_warning(*args, **kwargs):
-        warnings.warn(
-            ('The %s method is deprecated and will be removed in v2.*.*' %
-             name),
-            DeprecationWarning
-        )
+def _deprecated(func: Callable[_P, _T], name: str) -> Callable[_P, _T]:
+    """A decorator that warns about deprecation when the passed-in function is invoked."""
+
+    @functools.wraps(func)
+    def with_warning(*args: _P.args, **kwargs: _P.kwargs) -> _T:
+        msg = f"The {name} method is deprecated and will be removed in v2.*.*"
+        warnings.warn(msg, DeprecationWarning)
         return func(*args, **kwargs)
+
     return with_warning
 
 
-class Hashids(object):
+class Hashids:
     """Hashes and restores values using the "hashids" algorithm."""
-    ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 
-    def __init__(self, salt='', min_length=0, alphabet=ALPHABET):
+    ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+
+    def __init__(self, salt: str = "", min_length: int = 0, alphabet: str = ALPHABET) -> None:
         """
         Initializes a Hashids object with salt, minimum length, and alphabet.
 
@@ -177,14 +180,14 @@ class Hashids(object):
         self._min_length = max(int(min_length), 0)
         self._salt = salt
 
-        separators = ''.join(x for x in 'cfhistuCFHISTU' if x in alphabet)
-        alphabet = ''.join(x for i, x in enumerate(alphabet)
-                           if alphabet.index(x) == i and x not in separators)
+        separators = "".join(x for x in "cfhistuCFHISTU" if x in alphabet)
+        alphabet = "".join(
+            x for i, x in enumerate(alphabet) if alphabet.index(x) == i and x not in separators
+        )
 
         len_alphabet, len_separators = len(alphabet), len(separators)
         if len_alphabet + len_separators < 16:
-            raise ValueError('Alphabet must contain at least 16 '
-                             'unique characters.')
+            raise ValueError("Alphabet must contain at least 16 " "unique characters.")
 
         separators = _reorder(separators, salt)
 
@@ -213,61 +216,61 @@ class Hashids(object):
         self.decrypt = _deprecated(self.decode, "decrypt")
         self.encrypt = _deprecated(self.encode, "encrypt")
 
-    def encode(self, *values):
+    def encode(self, *values: int) -> str:
         """Builds a hash from the passed `values`.
 
-        :param values The values to transform into a hashid
+        :param values: The values to transform into a hashid
 
         >>> hashids = Hashids('arbitrary salt', 16, 'abcdefghijkl0123456')
         >>> hashids.encode(1, 23, 456)
         '1d6216i30h53elk3'
         """
         if not (values and all(_is_uint(x) for x in values)):
-            return ''
+            return ""
 
-        return _encode(values, self._salt, self._min_length, self._alphabet,
-                       self._separators, self._guards)
+        return _encode(
+            values, self._salt, self._min_length, self._alphabet, self._separators, self._guards
+        )
 
-    def decode(self, hashid):
+    def decode(self, hashid: str) -> tuple[int, ...]:
         """Restore a tuple of numbers from the passed `hashid`.
 
-        :param hashid The hashid to decode
+        :param hashid: The hashid to decode
 
         >>> hashids = Hashids('arbitrary salt', 16, 'abcdefghijkl0123456')
         >>> hashids.decode('1d6216i30h53elk3')
         (1, 23, 456)
         """
-        if not hashid or not _is_str(hashid):
+        if not hashid or not isinstance(hashid, str):
             return ()
         try:
-            numbers = tuple(_decode(hashid, self._salt, self._alphabet,
-                                    self._separators, self._guards))
-
+            numbers = tuple(
+                _decode(hashid, self._salt, self._alphabet, self._separators, self._guards)
+            )
             return numbers if hashid == self.encode(*numbers) else ()
         except ValueError:
             return ()
 
-    def encode_hex(self, hex_str):
+    def encode_hex(self, hex_str: str) -> str:
         """Converts a hexadecimal string (e.g. a MongoDB id) to a hashid.
 
-        :param hex_str The hexadecimal string to encodes
+        :param hex_str: The hexadecimal string to encodes
 
         >>> Hashids.encode_hex('507f1f77bcf86cd799439011')
         'y42LW46J9luq3Xq9XMly'
         """
-        numbers = (int('1' + hex_str[i:i+12], 16)
-                   for i in range(0, len(hex_str), 12))
+        numbers = (int("1" + hex_str[i : i + 12], 16) for i in range(0, len(hex_str), 12))
         try:
             return self.encode(*numbers)
         except ValueError:
-            return ''
+            return ""
 
-    def decode_hex(self, hashid):
+    def decode_hex(self, hashid: str) -> str:
         """Restores a hexadecimal string (e.g. a MongoDB id) from a hashid.
 
-        :param hashid The hashid to decode
+        :param hashid: The hashid to decode
 
         >>> Hashids.decode_hex('y42LW46J9luq3Xq9XMly')
         '507f1f77bcf86cd799439011'
         """
-        return ''.join(('%x' % x)[1:] for x in self.decode(hashid))
+        return "".join(("%x" % x)[1:] for x in self.decode(hashid))
