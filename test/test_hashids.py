@@ -87,6 +87,18 @@ class TestEncoding(object):
     def test_float_call(self):
         assert Hashids().encode(1, 2.5, 3) == ''
 
+    @pytest.mark.parametrize('value', [
+        None, [], {}, object(), 0.0, 1.0, float('inf'), float('-inf'),
+        float('nan'), '1', -1,
+    ])
+    def test_invalid_number(self, value):
+        assert Hashids().encode(1, value, 3) == ''
+
+    def test_large_integer(self):
+        values = (0, 2 ** 128, 10 ** 100)
+        h = Hashids()
+        assert h.decode(h.encode(*values)) == values
+
     def test_encode_hex(self):
         assert Hashids().encode_hex('507f1f77bcf86cd799439011') == 'y42LW46J9luq3Xq9XMly'
         assert len(Hashids(min_length=1000).encode_hex('507f1f77bcf86cd799439011')) >= 1000

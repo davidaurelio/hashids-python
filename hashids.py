@@ -3,6 +3,7 @@
 import warnings
 from functools import wraps
 from math import ceil
+from numbers import Integral
 
 __version__ = '1.3.1'
 
@@ -22,10 +23,7 @@ def _is_str(candidate):
 
 def _is_uint(number):
     """Returns whether a value is an unsigned integer."""
-    try:
-        return number == int(number) and number >= 0
-    except ValueError:
-        return False
+    return isinstance(number, Integral) and number >= 0
 
 
 def _split(string, splitters):
